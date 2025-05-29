@@ -1,7 +1,10 @@
 import App from "./App";
+import { TranscriptProvider } from "./contexts/TranscriptContext";
 
 export default function Page() {
   return (
-    <App />  
+    <TranscriptProvider>
+      <App />  
+    </TranscriptProvider>
   );
 }

@@ -1,6 +1,8 @@
 'use client';
 import { useState, useRef } from 'react';
+import { useHandleServerEvent } from '@/app/hooks/useHandleServerEvent';
 import VoiceCallPanel from './VoiceCallPanel';
+import Transcript from './Transcript';
 
 interface VoiceSessionManagerProps {
     ephemralKey: string;
@@ -10,6 +12,7 @@ export default function VoiceSessionManager({ ephemralKey }: VoiceSessionManager
     const [sessionStatus, setSessionStatus] = useState<'Not Started'|'Connecting' | 'Connected' | 'Disconnected'>('Not Started');
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const pcRef = useRef<RTCPeerConnection | null>(null);
+    const handleServerEventRef = useHandleServerEvent();
 
     
     const startConnection = async () => {
@@ -37,6 +40,8 @@ export default function VoiceSessionManager({ ephemralKey }: VoiceSessionManager
                 pc.addTrack(track, micStream);
             });
 
+            const dataChannel = pc.createDataChannel('oai-events');
+            
             const offer = await pc.createOffer();
             await pc.setLocalDescription(offer);
 
@@ -61,7 +66,7 @@ export default function VoiceSessionManager({ ephemralKey }: VoiceSessionManager
             };
             await pc.setRemoteDescription(answer);
 
-            const dataChannel = pc.createDataChannel('oai-events');
+            
 
             dataChannel.addEventListener('open', () => {
                 console.log('✅ DataChannel opened');
@@ -94,6 +99,8 @@ export default function VoiceSessionManager({ ephemralKey }: VoiceSessionManager
                 onConnectCall={startConnection}
                 onEndCall={endConnection}
             />
+            <Transcript/>
+
         </>     
     );
 }
