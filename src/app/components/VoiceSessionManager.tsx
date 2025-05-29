@@ -12,14 +12,16 @@ export default function VoiceSessionManager({ ephemralKey }: VoiceSessionManager
     const [sessionStatus, setSessionStatus] = useState<'Not Started'|'Connecting' | 'Connected' | 'Disconnected'>('Not Started');
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const pcRef = useRef<RTCPeerConnection | null>(null);
+    const dcRef = useRef<RTCDataChannel | null>(null);
     const handleServerEventRef = useHandleServerEvent();
+    const [dataChannel, setDataChannel] = useState<RTCDataChannel | null>(null);
 
     
     const startConnection = async () => {
         setSessionStatus('Connecting');
         try{
             const pc = new RTCPeerConnection();
-            pcRef.current = pc;
+            // const codec = "opus";
 
             // Setup audio Playback
             if (!audioRef.current) {
@@ -40,7 +42,7 @@ export default function VoiceSessionManager({ ephemralKey }: VoiceSessionManager
                 pc.addTrack(track, micStream);
             });
 
-            const dataChannel = pc.createDataChannel('oai-events');
+            const dc = pc.createDataChannel('oai-events');            
             
             const offer = await pc.createOffer();
             await pc.setLocalDescription(offer);
@@ -65,19 +67,17 @@ export default function VoiceSessionManager({ ephemralKey }: VoiceSessionManager
                 sdp: answerSdp,
             };
             await pc.setRemoteDescription(answer);
-
-            
-
-            dataChannel.addEventListener('open', () => {
-                console.log('✅ DataChannel opened');
-              });
-        
-              dataChannel.addEventListener('close', () => {
-                console.log('❌ DataChannel closed');
-            });
             
             setSessionStatus('Connected');
             pcRef.current = pc;
+            dcRef.current = dc;
+
+            dc.addEventListener("message", (e: MessageEvent) => {
+                console.log('Received message from data channel:', e.data);
+                handleServerEventRef.current(JSON.parse(e.data));
+            });
+            setDataChannel(dc);
+
 
         } catch (error) {
             console.error('Error setting up audio:', error);
@@ -89,6 +89,7 @@ export default function VoiceSessionManager({ ephemralKey }: VoiceSessionManager
         pcRef.current?.close();
         pcRef.current = null;
         setSessionStatus('Disconnected');
+        setDataChannel(null);
     }
       
     
