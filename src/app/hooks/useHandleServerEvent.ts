@@ -4,6 +4,12 @@ import { useRef } from "react";
 import { ServerEvent } from "@/app/types";
 import { useTranscript } from "@/app/contexts/TranscriptContext";
 
+
+
+export interface UseHandleServerEventParams {
+    sendClientEvent: (eventObj: unknown, eventNameSuffix?: string) => void;
+}
+
 export function useHandleServerEvent() {
     const { transcriptItems, addTranscriptMessage, updateTranscriptMessage, addTranscriptBreadcrumb, toggleTranscriptItemExpand, updateTranscriptItem } = useTranscript();
     
@@ -43,6 +49,7 @@ export function useHandleServerEvent() {
             }
 
             case "conversation.item.input_audio_transcription.completed": {
+                console.log("INSIDE input_audio_transcription.completed event");
                 const itemId = serverEvent.item_id;
                 const finalTranscript =
                   !serverEvent.transcript || serverEvent.transcript === "\n"

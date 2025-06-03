@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useHandleServerEvent } from '@/app/hooks/useHandleServerEvent';
 import VoiceCallPanel from './VoiceCallPanel';
 import Transcript from './Transcript';
@@ -17,6 +17,47 @@ export default function VoiceSessionManager({ ephemralKey }: VoiceSessionManager
     const [dataChannel, setDataChannel] = useState<RTCDataChannel | null>(null);
 
     
+    useEffect(() => {
+        if (sessionStatus === 'Connected' || sessionStatus === 'Connecting') {
+            updateSession();
+        } 
+    }, [sessionStatus]);
+
+    const sendClientEvent = (eventObj: unknown, eventNameSuffix = "") => {
+        console.log("INSIDE SENDCLIENTEVENT")
+        if (dcRef.current && dcRef.current.readyState === 'open') {
+            console.log(`Sending event inside send client event:`, JSON.stringify(eventObj));
+            dcRef.current.send(JSON.stringify(eventObj));
+        }
+    };
+
+    const updateSession = () => {
+        console.log("UPDATE SESSION: Updating session with new modalities and voice settings");
+        sendClientEvent(
+            { type: "input_audio_buffer.clear" },
+            "clear audio buffer on session update"
+        );
+    
+        const turnDetection = {
+            type: "server_vad",
+            threshold: 0.5,
+            prefix_padding_ms: 300,
+            silence_duration_ms: 200,
+            create_response: true,
+        }
+
+        const sessionUpdateEvent = {
+            type: "session.update",
+            session: {
+                modalities: ["text","audio"],
+                voice: "sage",
+                input_audio_transcription: { model: "whisper-1" },
+                turn_detection: turnDetection,
+            },
+        }
+        sendClientEvent(sessionUpdateEvent);
+    }
+
     const startConnection = async () => {
         setSessionStatus('Connecting');
         try{
@@ -68,14 +109,21 @@ export default function VoiceSessionManager({ ephemralKey }: VoiceSessionManager
             };
             await pc.setRemoteDescription(answer);
             
-            setSessionStatus('Connected');
+            // setSessionStatus('Connected');
             pcRef.current = pc;
             dcRef.current = dc;
+            setSessionStatus('Connected');
 
             dc.addEventListener("message", (e: MessageEvent) => {
                 console.log('Received message from data channel:', e.data);
                 handleServerEventRef.current(JSON.parse(e.data));
             });
+
+            dc.addEventListener("open", () => {
+                console.log("Data channel is open — sending session.update");
+                updateSession(); // NOW it is safe to call this
+            });
+
             setDataChannel(dc);
 
 
