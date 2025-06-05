@@ -3,6 +3,8 @@ import { useState, useRef, useEffect } from 'react';
 import { useHandleServerEvent } from '@/app/hooks/useHandleServerEvent';
 import VoiceCallPanel from './VoiceCallPanel';
 import Transcript from './Transcript';
+import { AgentConfig } from "@/app/types";
+import employeeDisputeHRAgent from "@/app/agentConfigs/disputeResolutionAgent";
 
 interface VoiceSessionManagerProps {
     ephemralKey: string;
@@ -38,6 +40,8 @@ export default function VoiceSessionManager({ ephemralKey }: VoiceSessionManager
             "clear audio buffer on session update"
         );
     
+        const instructions = employeeDisputeHRAgent.instructions || "";
+
         const turnDetection = {
             type: "server_vad",
             threshold: 0.5,
@@ -50,6 +54,7 @@ export default function VoiceSessionManager({ ephemralKey }: VoiceSessionManager
             type: "session.update",
             session: {
                 modalities: ["text","audio"],
+                instructions: instructions,
                 voice: "sage",
                 input_audio_transcription: { model: "whisper-1" },
                 turn_detection: turnDetection,
@@ -89,7 +94,7 @@ export default function VoiceSessionManager({ ephemralKey }: VoiceSessionManager
             await pc.setLocalDescription(offer);
 
             const response = await fetch(
-                `https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17`,
+                `https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2025-06-03`,
                 {
                     method: 'POST',
                     body: offer.sdp,
