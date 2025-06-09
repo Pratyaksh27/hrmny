@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import '../App.css';
 import VoiceSessionManager from './VoiceSessionManager';
 
@@ -10,41 +11,34 @@ function ApplicationForm() {
   const [employeeId, setEmployeeId] = useState('');
   const [otherPartyId, setOtherPartyId] = useState('');
   const [witnessId, setWitnessId] = useState('');
-  const [ephemeralKey, setEphemeralKey] = useState<string | null>(null);
+  // const [ephemeralKey, setEphemeralKey] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    setLoading(true);
     try {
-      const res = await fetch('/api/session', {
-        method: 'GET',
+      const res = await fetch('/api/report/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ employeeId, otherPartyId, witnessId }),
       });
 
       if (!res.ok) {
-        throw new Error(`Failed to create Voice HR session: ${res.statusText}`);
+        throw new Error(`Failed to start Report: ${res.statusText}`);
       }
-      const sessionData = await res.json();
-      const key = sessionData?.client_secret?.value;
-      if (!key) {
-        throw new Error('ApplicationForm.tsx: Failed to retrieve ephemeral key');
-      }
-      setEphemeralKey(key);
-      console.log('Voice session started:', sessionData);
+      const { reportId, conversationId } = await res.json();
+      // Redirect to the conversation page
+      router.push(`/report/${reportId}/conversation/${conversationId}`);
 
     } catch (error) {
-      console.error('Error submitting form and starting Voice session:', error);
+      console.error('Error submitting form and starting the report:', error);
+    } finally {
+      setLoading(false);
     }
-
   };
 
-  if (ephemeralKey) {
-    return (
-      <div>
-        <VoiceSessionManager ephemralKey={ephemeralKey} />
-        <p>Voice session started successfully!</p>
-      </div>
-    );
-  }
 
   return (
     <form className="form-card" onSubmit={handleSubmit}>
@@ -77,7 +71,7 @@ function ApplicationForm() {
         />
       </label>
 
-      <button type="submit">Talk to HR</button>
+      <button type="submit">Start New Case</button>
     </form>
   );
 }

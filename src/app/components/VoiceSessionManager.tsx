@@ -7,10 +7,10 @@ import { AgentConfig } from "@/app/types";
 import employeeDisputeHRAgent from "@/app/agentConfigs/disputeResolutionAgent";
 
 interface VoiceSessionManagerProps {
-    ephemralKey: string;
+    ephemeralKey: string;
 }
 
-export default function VoiceSessionManager({ ephemralKey }: VoiceSessionManagerProps) {
+export default function VoiceSessionManager({ ephemeralKey }: VoiceSessionManagerProps) {
     const [sessionStatus, setSessionStatus] = useState<'Not Started'|'Connecting' | 'Connected' | 'Disconnected'>('Not Started');
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const pcRef = useRef<RTCPeerConnection | null>(null);
@@ -99,7 +99,7 @@ export default function VoiceSessionManager({ ephemralKey }: VoiceSessionManager
                     method: 'POST',
                     body: offer.sdp,
                     headers: {
-                        Authorization: `Bearer ${ephemralKey}`,
+                        Authorization: `Bearer ${ephemeralKey}`,
                         'Content-Type': 'application/sdp',
                     },
                 }
