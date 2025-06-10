@@ -5,22 +5,19 @@
 // src/app/api/report/start/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
-
-// TEMPORARY in-memory store (replace with DB integration)
-const reports: any[] = [];
-const conversations: any[] = [];
+import { reports, conversations } from '../store';
 
 export async function POST(req: NextRequest) {
   const { employeeId, otherPartyId, witnessId } = await req.json();
 
-  // Generate fake IDs (replace with real DB IDs)
   const reportId = (reports.length + 1).toString();
   const conversationId = (conversations.length + 1).toString();
 
-  // Store report and conversation
+  // Store report with a conversationIds array
   reports.push({
     id: reportId,
     participants: [employeeId, otherPartyId, witnessId].filter(Boolean),
+    conversationIds: [conversationId],
     createdAt: new Date(),
   });
 
@@ -34,3 +31,5 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ reportId, conversationId });
 }
+
+
