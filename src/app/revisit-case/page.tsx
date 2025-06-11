@@ -1,7 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function RevisitCasePage() {
   const [caseId, setCaseId] = useState('');
@@ -14,7 +18,6 @@ export default function RevisitCasePage() {
     setLoading(true);
 
     try {
-      // Call the API to create a new conversation for the given report
       const res = await fetch('/api/report/add-conversation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -24,9 +27,8 @@ export default function RevisitCasePage() {
       if (!res.ok) {
         throw new Error(`Failed to create conversation: ${res.statusText}`);
       }
-      const { conversationId } = await res.json();
 
-      // Redirect to the conversation page
+      const { conversationId } = await res.json();
       router.push(`/report/${caseId}/conversation/${conversationId}`);
     } catch (err) {
       alert('Failed to create conversation. Please check the Case ID and try again.');
@@ -36,29 +38,40 @@ export default function RevisitCasePage() {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '50px' }}>
-      <h2>Revisit an Existing Case</h2>
-      <label>
-        Enter Case ID:
-        <input
-          type="text"
-          value={caseId}
-          onChange={(e) => setCaseId(e.target.value)}
-          required
-        />
-      </label>
-      <label>
-        Enter Your Employee ID:
-        <input
-          type="text"
-          value={employeeId}
-          onChange={(e) => setEmployeeId(e.target.value)}
-          required
-        />
-      </label>
-      <button type="submit" disabled={loading}>
-        {loading ? 'Starting...' : 'Start Conversation'}
-      </button>
-    </form>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <Card className="w-full max-w-md p-6 shadow-lg">
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <h2 className="text-2xl font-bold text-center">Revisit an Existing Case</h2>
+
+            <div className="space-y-2">
+              <Label htmlFor="caseId">Case ID</Label>
+              <Input
+                id="caseId"
+                type="text"
+                value={caseId}
+                onChange={(e) => setCaseId(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="employeeId">Your Employee ID</Label>
+              <Input
+                id="employeeId"
+                type="text"
+                value={employeeId}
+                onChange={(e) => setEmployeeId(e.target.value)}
+                required
+              />
+            </div>
+
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? 'Starting...' : 'Start Conversation'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

@@ -1,78 +1,109 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
+import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
-import '../App.css';
-import VoiceSessionManager from './VoiceSessionManager';
 
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage
+} from '@/components/ui/form';
 
+type FormData = {
+  employeeId: string;
+  otherPartyId: string;
+  witnessId?: string;
+};
 
 function ApplicationForm() {
-  const [employeeId, setEmployeeId] = useState('');
-  const [otherPartyId, setOtherPartyId] = useState('');
-  const [witnessId, setWitnessId] = useState('');
-  // const [ephemeralKey, setEphemeralKey] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const form = useForm<FormData>({
+    defaultValues: {
+      employeeId: '',
+      otherPartyId: '',
+      witnessId: '',
+    },
+  });
+
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  const onSubmit = async (data: FormData) => {
     try {
       const res = await fetch('/api/report/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ employeeId, otherPartyId, witnessId }),
+        body: JSON.stringify(data),
       });
 
       if (!res.ok) {
         throw new Error(`Failed to start Report: ${res.statusText}`);
       }
-      const { reportId, conversationId } = await res.json();
-      // Redirect to the conversation page
-      router.push(`/report/${reportId}/conversation/${conversationId}`);
 
+      const { reportId, conversationId } = await res.json();
+      router.push(`/report/${reportId}/conversation/${conversationId}`);
     } catch (error) {
       console.error('Error submitting form and starting the report:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
-
   return (
-    <form className="form-card" onSubmit={handleSubmit}>
-      <label>
-        Your Employee ID<span className="required">*</span>:
-        <input
-          type="text"
-          value={employeeId}
-          onChange={(e) => setEmployeeId(e.target.value)}
-          required
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <h2 className="text-2xl font-semibold text-gray-900 text-center">
+          Start a New Case
+        </h2>
+        <FormField
+          name="employeeId"
+          control={form.control}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Your Employee ID</FormLabel>
+              <FormControl>
+                <Input {...field} required />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </label>
 
-      <label>
-        Other Party's Employee ID<span className="required">*</span>:
-        <input
-          type="text"
-          value={otherPartyId}
-          onChange={(e) => setOtherPartyId(e.target.value)}
-          required
+        <FormField
+          name="otherPartyId"
+          control={form.control}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Other Party's Employee ID</FormLabel>
+              <FormControl>
+                <Input {...field} required />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </label>
 
-      <label>
-        Witness' Employee ID (Optional):
-        <input
-          type="text"
-          value={witnessId}
-          onChange={(e) => setWitnessId(e.target.value)}
+        <FormField
+          name="witnessId"
+          control={form.control}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Witness' Employee ID (Optional)</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </label>
 
-      <button type="submit">Start New Case</button>
-    </form>
+        <Button type="submit" className="w-full">
+          Start New Case
+        </Button>
+      </form>
+    </Form>
   );
 }
 
