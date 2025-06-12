@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import '../../public/styles/tailwind.css';
+// import '../../public/styles/tailwind.css';
+import "../styles/tailwind-input.css"; // ✅ DIRECTLY import the input
 import { TranscriptProvider } from "./contexts/TranscriptContext";
 
 const geistSans = Geist({
