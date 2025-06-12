@@ -147,14 +147,13 @@ export default function VoiceSessionManager({ ephemeralKey }: VoiceSessionManage
       
     
     return (
-        <>
+        <div className="flex flex-col space-y-0">
             <VoiceCallPanel
-                status={sessionStatus}
-                onConnectCall={startConnection}
-                onEndCall={endConnection}
+            status={sessionStatus}
+            onConnectCall={startConnection}
+            onEndCall={endConnection}
             />
-            <Transcript/>
-
-        </>     
+            <Transcript />
+        </div>
     );
 }

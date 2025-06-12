@@ -1,87 +1,63 @@
 'use client';
+
 import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 interface VoiceCallPanelProps {
-    status: 'Connecting' | 'Connected' | 'Disconnected' | 'Not Started';
-    onConnectCall: () => void;
-    onEndCall: () => void;
+  status: 'Connecting' | 'Connected' | 'Disconnected' | 'Not Started';
+  onConnectCall: () => void;
+  onEndCall: () => void;
 }
 
-export default function VoiceCallPanel({ status, onConnectCall ,onEndCall }: VoiceCallPanelProps) {
-    return (
-        <div className="voice-call-panel">
-            <h2>HR Agent Voice Call</h2>
+export default function VoiceCallPanel({ status, onConnectCall, onEndCall }: VoiceCallPanelProps) {
+  const renderStatusContent = () => {
+    switch (status) {
+      case 'Not Started':
+      case 'Connecting':
+      case 'Disconnected':
+        return (
+          <>
+            <p className="text-sm text-muted-foreground">
+              {status === 'Connecting'
+                ? '🔄 Connecting to HR Agent...'
+                : status === 'Disconnected'
+                ? '❌ Call ended.'
+                : '📞 Ready to connect to the HR Agent?'}
+            </p>
+            <Button className="mt-4" onClick={onConnectCall}>
+              📞 Connect Call
+            </Button>
+            <p className="text-xs text-muted-foreground mt-2 italic">
+              You can cancel the call anytime
+            </p>
+            <p className="text-xs text-muted-foreground italic">
+              Please ensure your microphone is working
+            </p>
+          </>
+        );
+      case 'Connected':
+        return (
+          <>
+            <p className="text-sm text-green-600 font-medium">
+              ✅ You are now talking to the HR Agent.
+            </p>
+            <Button variant="destructive" className="mt-4" onClick={onEndCall}>
+              🛑 End Call
+            </Button>
+          </>
+        );
+    }
+  };
 
-            {status === 'Not Started' && (
-                <>
-                    <p>📞 Ready to connect to the HR Agent ?</p>
-                    <button onClick={onConnectCall} className="end-call-button">
-                        📞 Connect Call
-                    </button>
-                    <p><em>(You can cancel the call anytime)</em></p>
-                    <p><em>(Please ensure your microphone is working)</em></p>
-                </>
-            )}
-            
-
-            {status === 'Connecting' && (
-                <>
-                    <p>🔄 Connecting to HR Agent...</p>
-                    <button onClick={onConnectCall} className="end-call-button">
-                        📞 Connect Call
-                    </button>
-                    <p><em>(You can cancel the call anytime)</em></p>
-                    <p><em>(Please ensure your microphone is working)</em></p>
-                </>
-            )}
-            {status === 'Connected' && (
-                <>
-                    <p>✅ You are now talking to the HR Agent.</p>
-                    <button onClick={onEndCall} className="end-call-button">
-                        🛑 End Call
-                    </button>
-                </>
-            )}
-            {status === 'Disconnected' && (
-                <>
-                    <p>❌ Call ended.</p>
-                    <button onClick={onConnectCall} className="end-call-button">
-                        📞 Connect Call
-                    </button>
-                    <p><em>(You can cancel the call anytime)</em></p>
-                    <p><em>(Please ensure your microphone is working)</em></p>
-                </>
-            )}
-
-            
-            <style jsx>{`
-                .voice-call-panel {
-                border: 1px solid #ccc;
-                padding: 1.5rem;
-                border-radius: 12px;
-                max-width: 500px;
-                margin: 2rem auto;
-                text-align: center;
-                background: #f9f9f9;
-                }
-                .end-call-button {
-                margin-top: 1rem;
-                background-color: red;
-                color: white;
-                padding: 0.75rem 1.25rem;
-                font-size: 1rem;
-                border: none;
-                border-radius: 8px;
-                cursor: pointer;
-                }
-                .transcript-placeholder {
-                margin-top: 2rem;
-                font-size: 0.9rem;
-                color: gray;
-                }
-         `}</style>
-
-        </div>
-    );
+  return (
+    <div className="flex justify-center py-8 px-4">
+      <Card className="w-full max-w-md text-center">
+        <CardContent className="py-6">
+          <h2 className="text-xl font-semibold mb-4">HR Agent Voice Call</h2>
+          {renderStatusContent()}
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
-   
