@@ -5,12 +5,15 @@ import VoiceCallPanel from './VoiceCallPanel';
 import Transcript from './Transcript';
 import { AgentConfig } from "@/app/types";
 import employeeDisputeHRAgent from "@/app/agentConfigs/disputeResolutionAgent";
+import { buildVoiceAgentInstructions } from "@/lib/utils";
 
 interface VoiceSessionManagerProps {
     ephemeralKey: string;
+    reportId: string;
+    conversationId: string;
 }
 
-export default function VoiceSessionManager({ ephemeralKey }: VoiceSessionManagerProps) {
+export default function VoiceSessionManager({ ephemeralKey, reportId,  conversationId }: VoiceSessionManagerProps) {
     const [sessionStatus, setSessionStatus] = useState<'Not Started'|'Connecting' | 'Connected' | 'Disconnected'>('Not Started');
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const pcRef = useRef<RTCPeerConnection | null>(null);
@@ -33,14 +36,15 @@ export default function VoiceSessionManager({ ephemeralKey }: VoiceSessionManage
         }
     };
 
-    const updateSession = () => {
+    const updateSession = async () => {
         console.log("UPDATE SESSION: Updating session with new modalities and voice settings");
         sendClientEvent(
             { type: "input_audio_buffer.clear" },
             "clear audio buffer on session update"
         );
     
-        const instructions = employeeDisputeHRAgent.instructions || "";
+        // const instructions = employeeDisputeHRAgent.instructions || "";
+        const instructions = await buildVoiceAgentInstructions(reportId, conversationId);
 
         const turnDetection = {
             type: "server_vad",

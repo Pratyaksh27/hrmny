@@ -73,7 +73,7 @@ export default function ConversationPage() {
             Conversation ID: {conversationId}
           </p>
         </div>
-        <VoiceSessionManager ephemeralKey={ephemeralKey} />
+        <VoiceSessionManager ephemeralKey={ephemeralKey} reportId={reportId} conversationId={conversationId} />
       </div>
     </main>
   );
