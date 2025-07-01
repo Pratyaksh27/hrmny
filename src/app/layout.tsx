@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { NavigationGuardProvider } from "next-navigation-guard";
 // import '../../public/styles/tailwind.css';
 import "../styles/tailwind-input.css"; // ✅ DIRECTLY import the input
 import { TranscriptProvider } from "./contexts/TranscriptContext";
@@ -29,9 +30,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <TranscriptProvider>
-          {children}
-        </TranscriptProvider>
+        <NavigationGuardProvider>
+          <TranscriptProvider>
+            {children}
+          </TranscriptProvider>
+        </NavigationGuardProvider>
       </body>
     </html>
   );

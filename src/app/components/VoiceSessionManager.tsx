@@ -3,9 +3,8 @@ import { useState, useRef, useEffect } from 'react';
 import { useHandleServerEvent } from '@/app/hooks/useHandleServerEvent';
 import VoiceCallPanel from './VoiceCallPanel';
 import Transcript from './Transcript';
-import { AgentConfig } from "@/app/types";
-import employeeDisputeHRAgent from "@/app/agentConfigs/disputeResolutionAgent";
 import { buildVoiceAgentInstructions } from "@/lib/utils";
+import { useNavigationGuard } from "next-navigation-guard";
 
 interface VoiceSessionManagerProps {
     ephemeralKey: string;
@@ -21,7 +20,35 @@ export default function VoiceSessionManager({ ephemeralKey, reportId,  conversat
     const handleServerEventRef = useHandleServerEvent();
     const [dataChannel, setDataChannel] = useState<RTCDataChannel | null>(null);
 
-    
+    /**
+     * When the user navigates away from the page, the session should end
+     * This is the navigationGuard for that
+     */
+    useNavigationGuard({
+       enabled: sessionStatus === "Connected" || sessionStatus === "Connecting",
+       confirm: async () => {
+            if (sessionStatus === "Connected") {
+                // If connected, we want to end the call before navigating away
+                if (window.confirm("Are you sure you want to end the call and navigate away?")) {
+                    endConnection();
+                    return true;
+                }
+                else {
+                    // If the user cancels, we do not want to navigate away
+                    return false;
+                }
+            }
+            // Allow navigation
+            return true;
+        }
+    });
+
+
+    /*
+    ** The Below useEffect is used to update the session when the sessionStatus changes.
+    ** In the Update Session we send a session.update event to the server with the new modalities and voice settings.
+    ** This is necessary to ensure that we get transcription of the user audio
+     */
     useEffect(() => {
         if (sessionStatus === 'Connected' || sessionStatus === 'Connecting') {
             updateSession();
