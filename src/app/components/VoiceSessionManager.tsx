@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useHandleServerEvent } from '@/app/hooks/useHandleServerEvent';
 import VoiceCallPanel from './VoiceCallPanel';
 import Transcript from './Transcript';
+import { useTranscript } from "@/app/contexts/TranscriptContext";
 import { buildVoiceAgentInstructions } from "@/lib/utils";
 import { useNavigationGuard } from "next-navigation-guard";
 
@@ -19,18 +20,20 @@ export default function VoiceSessionManager({ ephemeralKey, reportId,  conversat
     const dcRef = useRef<RTCDataChannel | null>(null);
     const handleServerEventRef = useHandleServerEvent();
     const [dataChannel, setDataChannel] = useState<RTCDataChannel | null>(null);
+    const { clearTranscript } = useTranscript();
 
     /**
      * When the user navigates away from the page, the session should end
      * This is the navigationGuard for that
      */
     useNavigationGuard({
-       enabled: sessionStatus === "Connected" || sessionStatus === "Connecting",
+       enabled: sessionStatus === "Connected" || sessionStatus === "Connecting" || sessionStatus === "Disconnected",
        confirm: async () => {
             if (sessionStatus === "Connected") {
                 // If connected, we want to end the call before navigating away
                 if (window.confirm("Are you sure you want to end the call and navigate away?")) {
                     endConnection();
+                    clearTranscript(); // Clear the transcript when ending the call
                     return true;
                 }
                 else {
@@ -39,6 +42,7 @@ export default function VoiceSessionManager({ ephemeralKey, reportId,  conversat
                 }
             }
             // Allow navigation
+            clearTranscript(); // Clear the transcript when navigating away
             return true;
         }
     });
