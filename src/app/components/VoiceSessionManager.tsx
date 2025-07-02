@@ -6,6 +6,7 @@ import Transcript from './Transcript';
 import { useTranscript } from "@/app/contexts/TranscriptContext";
 import { buildVoiceAgentInstructions } from "@/lib/utils";
 import { useNavigationGuard } from "next-navigation-guard";
+import { TranscriptItem } from "@/app/types";
 
 interface VoiceSessionManagerProps {
     ephemeralKey: string;
@@ -20,7 +21,34 @@ export default function VoiceSessionManager({ ephemeralKey, reportId,  conversat
     const dcRef = useRef<RTCDataChannel | null>(null);
     const handleServerEventRef = useHandleServerEvent();
     const [dataChannel, setDataChannel] = useState<RTCDataChannel | null>(null);
-    const { clearTranscript } = useTranscript();
+    const { transcriptItems, clearTranscript } = useTranscript();
+    const hasUploadedRef = useRef(false); // To track if the transcript has been uploaded
+
+
+    const uploadTranscript = async () => {
+        if (hasUploadedRef.current) return;
+        hasUploadedRef.current = true;
+
+        try {
+            const res = await fetch("/api/conversation/upload-transcript", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    conversationId,
+                    transcript: transcriptItems,
+                }),
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                console.error("❌ Failed to upload transcript:", err);
+            } else {
+                console.log("✅ Transcript uploaded successfully");
+            }
+        } catch (err) {
+            console.error("❌ Transcript Upload error:", err);
+        }
+    };
 
     /**
      * When the user navigates away from the page, the session should end
@@ -173,11 +201,12 @@ export default function VoiceSessionManager({ ephemeralKey, reportId,  conversat
         }
     };
 
-    const endConnection = () => {
+    const endConnection = async () => {
         pcRef.current?.close();
         pcRef.current = null;
         setSessionStatus('Disconnected');
         setDataChannel(null);
+        await uploadTranscript(); // Upload the transcript when ending the session
     }
       
     
