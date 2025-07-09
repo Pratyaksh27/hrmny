@@ -16,17 +16,17 @@ import {
 } from '@/components/ui/form';
 
 type FormData = {
-  employeeId: string;
-  otherPartyId: string;
-  witnessId?: string;
+  claimantEmployeeId: string;
+  defendantEmployeeId: string;
+  witnessEmployeeId?: string;
 };
 
 function ApplicationForm() {
   const form = useForm<FormData>({
     defaultValues: {
-      employeeId: '',
-      otherPartyId: '',
-      witnessId: '',
+      claimantEmployeeId: '',
+      defendantEmployeeId: '',
+      witnessEmployeeId: '',
     },
   });
 
@@ -58,7 +58,7 @@ function ApplicationForm() {
           Start a New Case
         </h2>
         <FormField
-          name="employeeId"
+          name="claimantEmployeeId"
           control={form.control}
           render={({ field }) => (
             <FormItem>
@@ -72,7 +72,7 @@ function ApplicationForm() {
         />
 
         <FormField
-          name="otherPartyId"
+          name="defendantEmployeeId"
           control={form.control}
           render={({ field }) => (
             <FormItem>
@@ -86,7 +86,7 @@ function ApplicationForm() {
         />
 
         <FormField
-          name="witnessId"
+          name="witnessEmployeeId"
           control={form.control}
           render={({ field }) => (
             <FormItem>
