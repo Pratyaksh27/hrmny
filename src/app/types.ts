@@ -75,5 +75,10 @@ export interface TranscriptItem {
       | AgentConfig[]
       | { name: string; publicDescription: string }[];
   }
+
+  export type TargetParticipant = {
+    employeeId: string;
+    role?: "claimant" | "defendant" | "witness";
+  }
   
   export type AllAgentConfigsType = Record<string, AgentConfig[]>;

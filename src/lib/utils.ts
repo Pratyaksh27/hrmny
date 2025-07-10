@@ -85,6 +85,9 @@ export async function buildVoiceAgentInstructions(
   const greetingInstruction = employeeName ? `Always greet the employee by their first name, ${employeeName.firstName} 
   when referring to them . Start the conversation with saying "Hi ${employeeName.firstName}, how may I help you today?"` : "";
 
+  /**
+   * For this Employee ID and the Report ID, get ALL the questions to ask the Employee Here
+   */
   console.log("UTILS: The greeting instruction is:", greetingInstruction);
   return `${greetingInstruction}\n\n${baseInstructions}`;
 
