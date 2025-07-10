@@ -7,6 +7,7 @@ import { useTranscript } from "@/app/contexts/TranscriptContext";
 import { buildVoiceAgentInstructions } from "@/lib/utils";
 import { useNavigationGuard } from "next-navigation-guard";
 import { TranscriptItem } from "@/app/types";
+import { generateDerivedQuestionsFromTranscript } from "@/services/generateDerivedQuestions";
 
 interface VoiceSessionManagerProps {
     ephemeralKey: string;
@@ -44,6 +45,11 @@ export default function VoiceSessionManager({ ephemeralKey, reportId,  conversat
                 console.error("❌ Failed to upload transcript:", err);
             } else {
                 console.log("✅ Transcript uploaded successfully");
+                // Generate derived questions from the transcript
+                await generateDerivedQuestionsFromTranscript({
+                    conversationId,
+                    transcriptItems: transcriptItems as TranscriptItem[],
+                });
             }
         } catch (err) {
             console.error("❌ Transcript Upload error:", err);
