@@ -1,5 +1,7 @@
 import { getTargetParticipants } from "./getTargetParticipants";
 import { TranscriptItem } from "@/app/types";
+import { normalizeTranscript } from "@/lib/normalizeTranscript";
+
 
 export async function generateDerivedQuestionsFromTranscript({
     conversationId,
@@ -23,5 +25,11 @@ export async function generateDerivedQuestionsFromTranscript({
 
     // questions = call LLM (transcriptItems, targetParticipants)
     // For each question, Enter into the derived_questions table
+
+    const normalizedTranscript = normalizeTranscript(transcriptItems);
+    console.log("Normalized Transcript for Derived Questions:");
+    normalizedTranscript.forEach((msg) => {
+        console.log(`Role: ${msg.role}, Content: ${msg.content}`);
+    });
 
 }

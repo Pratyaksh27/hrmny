@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export interface TranscriptItem {
+  export interface TranscriptItem {
     itemId: string;
     type: "MESSAGE" | "BREADCRUMB";
     role?: "user" | "assistant";
@@ -14,6 +14,10 @@ export interface TranscriptItem {
     guardrailResult?: unknown;
   }
 
+  export type NormalizedTranscriptItem = {
+    role: "user" | "assistant";
+    content: string;
+  }
 
   export interface ServerEvent {
     type: string;
