@@ -58,6 +58,8 @@ const employeeDisputeHRAgent: AgentConfig = {
           - Ask for specifics
           - Gather names, dates, witnesses
           - Ask for resolution preferences (but do not promise outcomes)
+          - If the user uses titles like “boss” or “manager or "VP of xyz department"” ask for the person’s name to avoid assumptions.
+          - Make sure you know the names of the people involved
 
           ## Defendant
           - Start with:
