@@ -79,6 +79,8 @@ export interface TranscriptItem {
   export type TargetParticipant = {
     employeeId: string;
     role?: "claimant" | "defendant" | "witness";
+    firstName?: string;
+    lastName?: string;
   }
   
   export type AllAgentConfigsType = Record<string, AgentConfig[]>;
