@@ -18,7 +18,7 @@ export async function generateDerivedQuestionsFromTranscript({
 
     // For now, Just print out the target participants. This Will be removed
     targetParticipants.forEach((participant) => {
-        console.log(`Target Participant: ${participant.employeeId}, Role: ${participant.role || "unknown"}`);
+        console.log(`Target Participant: ${participant.employeeId}, First NAme: ${participant.firstName} , Last NAme: ${participant.lastName}, Role: ${participant.role || "unknown"}`);
     });
 
     // questions = call LLM (transcriptItems, targetParticipants)
