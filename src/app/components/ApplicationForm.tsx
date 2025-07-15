@@ -37,7 +37,12 @@ function ApplicationForm() {
       const res = await fetch('/api/report/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          claimantEmployeeId: parseInt(data.claimantEmployeeId, 10),
+          defendantEmployeeId: parseInt(data.defendantEmployeeId, 10),
+          witnessEmployeeId: data.witnessEmployeeId ? parseInt(data.witnessEmployeeId, 10) : undefined,
+        })
       });
 
       if (!res.ok) {

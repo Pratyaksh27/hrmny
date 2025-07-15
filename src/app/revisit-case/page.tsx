@@ -21,7 +21,7 @@ export default function RevisitCasePage() {
       const res = await fetch('/api/report/add-conversation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reportId: caseId, employeeId }),
+        body: JSON.stringify({ reportId: caseId, employeeId: parseInt(employeeId, 10) }),
       });
 
       if (!res.ok) {

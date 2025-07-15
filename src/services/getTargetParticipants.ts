@@ -31,18 +31,18 @@ export async function getTargetParticipants(
         }
 
         // Step 3: Flatten roles into a list
-        const rawParticipants: {employeeId: string, role: "claimant" | "defendant" | "witness"}[] = [
+        const rawParticipants: {employeeId: number, role: "claimant" | "defendant" | "witness"}[] = [
             { employeeId: report.claimant, role: "claimant" },
-            ...report.defendants.map((defendant: string) => ({ employeeId: defendant, role: "defendant" })),
-            ...report.witnesses.map((witness: string) => ({ employeeId: witness, role: "witness" }))
+            ...report.defendants.map((defendant: number) => ({ employeeId: defendant, role: "defendant" })),
+            ...report.witnesses.map((witness: number) => ({ employeeId: witness, role: "witness" }))
         ];
 
         // Step 4: Filter out the current participant of the conversation
         const targets = rawParticipants.filter((participant) => participant.employeeId !== currentSpeakerId);
         // We need to do parseInt below because employeeId is a string in the reports and conversations, but int in employees table
         const targetIds = targets
-            .map((participant) => parseInt(participant.employeeId, 10))
-            .filter((id) => !isNaN(id));
+            .map((participant) => participant.employeeId)
+           
 
 
         if (targetIds.length === 0) { return []; }
@@ -61,7 +61,7 @@ export async function getTargetParticipants(
         // Step 6: Map to TargetParticipant type
         const targetParticipants: TargetParticipant[] = targets.map((target) => {
             // const employee = employees.find((emp) => emp.id === target.employeeId);
-            const employee = employees.find((emp) => emp.id === parseInt(target.employeeId));
+            const employee = employees.find((emp) => emp.id === target.employeeId);
 
             return {
                 employeeId: target.employeeId,
