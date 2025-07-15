@@ -18,7 +18,7 @@ Rules:
 
 [
   {
-    "employeeId": "123",
+    "employeeId": 123,
     "role": "witness",
     "questions": [
       "Did you observe the incident on July 3rd involving Alex in the Zoom call?",

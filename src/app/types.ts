@@ -81,7 +81,7 @@ import { z } from "zod";
   }
 
   export type TargetParticipant = {
-    employeeId: string;
+    employeeId: number;
     role?: "claimant" | "defendant" | "witness";
     firstName?: string;
     lastName?: string;
