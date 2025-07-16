@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { TargetParticipant } from "@/app/types";
+import { ParticipantRole, TargetParticipant } from "@/app/types";
 
 export async function getTargetParticipants(
     conversationId: string
@@ -31,7 +31,7 @@ export async function getTargetParticipants(
         }
 
         // Step 3: Flatten roles into a list
-        const rawParticipants: {employeeId: number, role: "claimant" | "defendant" | "witness"}[] = [
+        const rawParticipants: {employeeId: number, role: ParticipantRole}[] = [
             { employeeId: report.claimant, role: "claimant" },
             ...report.defendants.map((defendant: number) => ({ employeeId: defendant, role: "defendant" })),
             ...report.witnesses.map((witness: number) => ({ employeeId: witness, role: "witness" }))

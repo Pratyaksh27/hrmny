@@ -80,9 +80,11 @@ import { z } from "zod";
       | { name: string; publicDescription: string }[];
   }
 
+  export type ParticipantRole = "claimant" | "defendant" | "witness" | "hr" | "manager" | "other";
+
   export type TargetParticipant = {
     employeeId: number;
-    role?: "claimant" | "defendant" | "witness";
+    role?: ParticipantRole;
     firstName?: string;
     lastName?: string;
   }
