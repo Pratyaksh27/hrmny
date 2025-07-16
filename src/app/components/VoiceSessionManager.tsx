@@ -47,6 +47,7 @@ export default function VoiceSessionManager({ ephemeralKey, reportId,  conversat
                 console.log("✅ Transcript uploaded successfully");
                 // Generate derived questions from the transcript
                 await generateDerivedQuestionsFromTranscript({
+                    reportId,
                     conversationId,
                     transcriptItems: transcriptItems as TranscriptItem[],
                 });

@@ -45,11 +45,28 @@ export async function POST(req: NextRequest) {
 
     const content = completion.choices[0].message.content;
     console.log("🧠 LLM Output:", content);
+    /**
+     * What comes out of the LLM is a JSON formatted string that represents an array of {employeeId, role, questions[]}
+     * So we need JSON.parse to convert that JSON fromatted string into a JavaScript object.
+     * If the LLM output is not a string, we log an error and return a 500 response.
+     * If the parsing fails, we log the error and return a 500 response.
+     */
+    let parsedContent;
+    try {
+      if (typeof content === "string") {
+        parsedContent = JSON.parse(content);
+      } else {
+        console.error("❌ derived-questions/generate/route: LLM output is not a string:", content);
+      }
+    } catch (error) {
+      console.error("❌ derived-questions/generate/route: Error parsing LLM output:", error);
+      return NextResponse.json({ error: "derived-questions/generate/route: Failed to parse LLM output" }, { status: 500 });
+    }
 
-    return NextResponse.json({ questions: content });
+    return NextResponse.json({ questions: parsedContent }, { status: 200 });
   } catch (error) {
-    console.error("❌ Error generating questions:", error);
-    return NextResponse.json({ error: "Failed to generate questions" }, { status: 500 });
+    console.error("❌ derived-questions/generate/route: Error generating questions:", error);
+    return NextResponse.json({ error: "derived-questions/generate/route: Failed to generate questions" }, { status: 500 });
   }
 }
 
