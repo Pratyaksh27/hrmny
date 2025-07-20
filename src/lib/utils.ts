@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { supabase } from "@/lib/supabase"
+import { ParticipantRole } from "@/app/types"
 import employeeDisputeAgent from "@/app/agentConfigs/disputeResolutionAgent";
 
 export function cn(...inputs: ClassValue[]) {
@@ -64,6 +65,48 @@ export async function getFirstNameLastNameFromEmployeeId(
   }
 } 
 
+
+/**
+ * Get the role of the employee in the Report. It will be used to generate specific intructions for them .
+ * @param reportId Get 
+ * @param conversationId 
+ * @returns "role" of the employee in the conversation, 
+ */
+
+export async function getEmployeeRoleInReport(
+  reportId: string,
+  employeeId: number
+): Promise<ParticipantRole | null> {
+  try {
+    const { data, error } = await supabase
+      .from("reports")
+      .select("claimant, defendants, witnesses")
+      .eq("id", reportId)
+      .single();
+
+    if (error) {
+      console.error("utils.ts : Error fetching employee role:", error);
+      return null;
+    }
+
+    const { claimant, defendants, witnesses } = data || {};
+    let role: ParticipantRole | null = null;
+    if (employeeId === claimant) role = "claimant";
+    if (defendants && defendants.includes(employeeId)) role = "defendant";
+    if (witnesses && witnesses.includes(employeeId)) role = "witness";
+
+    console.log("utils.ts : Employee role in report:", { employeeId, role });
+    
+    // If the employee is not found in any of the roles, return null
+    return role;
+
+  } catch (error) {
+    console.error("utils.ts : Unexpected error fetching employee role:", error);
+    return null;
+  }
+}
+
+
 /**
  * Build voice agent instructions by combining base agent instructions with a personalized greeting.
  * This function retrieves the employee's name based on the report ID and conversation ID,
@@ -80,6 +123,7 @@ export async function buildVoiceAgentInstructions(
   console.log("BUILD INSTRUCTIONS: Inputs → reportId:", reportId, "conversationId:", conversationId);
   const employeeId = await getEmployeeIdFromConversation(reportId, conversationId);
   const employeeName = employeeId ? await getFirstNameLastNameFromEmployeeId(employeeId) : null;
+  const employeeRole = employeeId ? await getEmployeeRoleInReport(reportId, parseInt(employeeId)) : null;
 
   const baseInstructions = employeeDisputeAgent.instructions || "";
   const greetingInstruction = employeeName ? `Always greet the employee by their first name, ${employeeName.firstName} 
