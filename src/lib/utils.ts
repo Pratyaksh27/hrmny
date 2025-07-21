@@ -15,7 +15,7 @@ export function cn(...inputs: ClassValue[]) {
 export async function getEmployeeIdFromConversation(
   reportId: string,
   conversationId: string
-): Promise<string | null> {
+): Promise<number | 0> {
   try {
     const { data, error } = await supabase
       .from("conversations")
@@ -26,13 +26,13 @@ export async function getEmployeeIdFromConversation(
 
     if (error) {
       console.error("Error fetching employee ID:", error);
-      return null;
+      return 0;
     }
 
     return data?.participant || null;
   } catch (error) {
     console.error("Unexpected error fetching employee ID:", error);
-    return null;
+    return 0;
   }
 }
 
@@ -40,7 +40,7 @@ export async function getEmployeeIdFromConversation(
  * Given an employee ID, return the employee's first and last name.
  */
 export async function getFirstNameLastNameFromEmployeeId(
-  employeeId: string
+  employeeId: number
 ): Promise<{ firstName: string; lastName: string } | null> {
   console.log("UTILS: Fetching employee name for Id:", employeeId);
   try {
@@ -141,7 +141,37 @@ export async function isFirstConversation(
   }
 }
 
+/**
+ * 
+ * @param reportId 
+ * @param employeeID 
+ * @returns string[] of questions to ask the employee.
+ * getDerivedQuestions takes a reportId and employeeID and returns an array of questions to ask the employee.
+ * It queries the derived_questions table to find all questions associated with the reportId and employeeID.
+ * How this value is Used: This function is used to get the questions to ask the employee in the conversation.
+ * It is called when the conversation is NOT the first one in the report.
+ */
 
+export async function getDerivedQuestions(reportId: string, employeeId: number)
+: Promise<string[]>{
+  try{
+    const { data, error} = await supabase.from("derived_questions")
+      .select("question")
+      .eq("report_id", reportId)
+      .eq("employee_id", employeeId)
+      .order("created_at", { ascending: true });
+
+      if (error || !data) {
+        console.error("utils.ts: Error fetching derived questions:", error);
+        return [];
+      }
+      return data.map((item) => item.question);
+    
+  } catch (error) {
+    console.error("utils.ts: Error fetching derived questions:", error);
+    return [];
+  }
+}
 
 /**
  * Build voice agent instructions by combining base agent instructions with a personalized greeting.
@@ -159,10 +189,12 @@ export async function buildVoiceAgentInstructions(
   console.log("BUILD INSTRUCTIONS: Inputs → reportId:", reportId, "conversationId:", conversationId);
   const employeeId = await getEmployeeIdFromConversation(reportId, conversationId);
   const employeeName = employeeId ? await getFirstNameLastNameFromEmployeeId(employeeId) : null;
-  const employeeRole = employeeId ? await getEmployeeRoleInReport(reportId, parseInt(employeeId)) : null;
+  const employeeRole = employeeId ? await getEmployeeRoleInReport(reportId, employeeId) : null;
   const isFirstConversationFlag = await isFirstConversation(reportId, conversationId);
+  const questions_to_ask = isFirstConversationFlag ? [] : await getDerivedQuestions(reportId, employeeId);
 
   console.log("BUILD INSTRUCTIONS: employeeId:", employeeId, "employeeName:", employeeName, "employeeRole:", employeeRole, "isFirstConversationFlag:", isFirstConversationFlag);
+  console.log("BUILD INSTRUCTIONS: questions_to_ask:", questions_to_ask);
 
   const baseInstructions = employeeDisputeAgent.instructions || "";
   const greetingInstruction = employeeName ? `Always greet the employee by their first name, ${employeeName.firstName} 
