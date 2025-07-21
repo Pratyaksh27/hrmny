@@ -106,6 +106,42 @@ export async function getEmployeeRoleInReport(
   }
 }
 
+/**
+ * 
+ * @param reportId 
+ * @param conversationId 
+ * @returns true/false
+ * isFirstConversation takes a conversationId, reportId and checks if the conversation is the first one in the report.
+ * It queries the conversations table to find all conversations associated with the reportId,
+ * orders them by creation date, and checks if the provided conversationId matches the first one. 
+ * How thi value is Used: If the conversation is NOT the first one, then we will call get_derived_questions
+ * to get the questions to ask the employee. If it is the first conversation, we will not call get_derived_questions.
+
+ */
+export async function isFirstConversation(
+  reportId: string,
+  conversationId: string
+): Promise<boolean> {
+  try {
+    const { data, error } = await supabase
+      .from("conversations")
+      .select("id")
+      .eq("report_id", reportId)
+      .order("created_at", { ascending: true })
+      
+      if (error || !data || data.length === 0) {
+        console.error("utils.ts: Error fetching conversations or no conversations found:", error);
+        return false;
+      }
+
+      return data[0].id === conversationId;
+  } catch (error) {
+    console.error("utils.ts: Unexpected error checking first conversation:", error);
+    return false;
+  }
+}
+
+
 
 /**
  * Build voice agent instructions by combining base agent instructions with a personalized greeting.
@@ -124,6 +160,9 @@ export async function buildVoiceAgentInstructions(
   const employeeId = await getEmployeeIdFromConversation(reportId, conversationId);
   const employeeName = employeeId ? await getFirstNameLastNameFromEmployeeId(employeeId) : null;
   const employeeRole = employeeId ? await getEmployeeRoleInReport(reportId, parseInt(employeeId)) : null;
+  const isFirstConversationFlag = await isFirstConversation(reportId, conversationId);
+
+  console.log("BUILD INSTRUCTIONS: employeeId:", employeeId, "employeeName:", employeeName, "employeeRole:", employeeRole, "isFirstConversationFlag:", isFirstConversationFlag);
 
   const baseInstructions = employeeDisputeAgent.instructions || "";
   const greetingInstruction = employeeName ? `Always greet the employee by their first name, ${employeeName.firstName} 
