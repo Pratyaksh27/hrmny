@@ -3,6 +3,10 @@ import { twMerge } from "tailwind-merge"
 import { supabase } from "@/lib/supabase"
 import { ParticipantRole } from "@/app/types"
 import employeeDisputeAgent from "@/app/agentConfigs/disputeResolutionAgent";
+import { identityInstruction, toneLanguageInstruction, roleInstructionsClaimantFirstConversation, roleInstructionsDefendant, 
+  roleInstructionsWitness, conversationStructureInstruction, summaryClosureInstruction, signaturePhrasesInstruction, redFlagsInstruction, 
+  outcomesInstruction, sampleConversations
+ } from "@/app/agentConfigs/disputeResolutionAgent";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -10,7 +14,7 @@ export function cn(...inputs: ClassValue[]) {
 
 /**
  * Given a report ID and a conversation ID, return the employee ID (participant).
- */
+ */ 
 
 export async function getEmployeeIdFromConversation(
   reportId: string,
@@ -196,14 +200,64 @@ export async function buildVoiceAgentInstructions(
   console.log("BUILD INSTRUCTIONS: employeeId:", employeeId, "employeeName:", employeeName, "employeeRole:", employeeRole, "isFirstConversationFlag:", isFirstConversationFlag);
   console.log("BUILD INSTRUCTIONS: questions_to_ask:", questions_to_ask);
 
-  const baseInstructions = employeeDisputeAgent.instructions || "";
   const greetingInstruction = employeeName ? `Always greet the employee by their first name, ${employeeName.firstName} 
-  when referring to them . Start the conversation with saying "Hi ${employeeName.firstName}, how may I help you today?"` : "";
+  when referring to them . Start the conversation with saying "Hi ${employeeName.firstName}"` : "";
+
+  const roleObjectiveInstruction = getObjectiveInstruction(
+    employeeRole,
+    isFirstConversationFlag,
+    questions_to_ask
+  );
+
+  const fullInstruction = [
+    
+    identityInstruction,
+    toneLanguageInstruction,
+    greetingInstruction,
+    roleObjectiveInstruction,
+    conversationStructureInstruction,  
+    summaryClosureInstruction,
+    redFlagsInstruction,
+    signaturePhrasesInstruction,
+    outcomesInstruction,
+    sampleConversations,
+  ]
+    .filter(Boolean)
+    .join("\n\n");
 
   /**
    * For this Employee ID and the Report ID, get ALL the questions to ask the Employee Here
    */
   console.log("UTILS: The greeting instruction is:", greetingInstruction);
-  return `${greetingInstruction}\n\n${baseInstructions}`;
+  return `${fullInstruction}`;
 
+}
+
+
+/**
+ * Builds the objective instruction section based on role and context
+ */
+export function getObjectiveInstruction(
+  role: ParticipantRole | null,
+  isFirstConversation: boolean,
+  questions: string[]
+): string {
+  if (!role) return "";
+
+  let roleInstruction = "";
+
+  if (role === "claimant" && isFirstConversation) {
+    roleInstruction = roleInstructionsClaimantFirstConversation;
+  } else if (role === "defendant") {
+    roleInstruction = roleInstructionsDefendant;
+  } else if (role === "witness") {
+    roleInstruction = roleInstructionsWitness;
+  }
+
+  const questionsBlock =
+    !isFirstConversation && questions.length > 0
+      ? `\n\n### Questions to Ask\n${questions.map((q, i) => `${i + 1}. ${q}`).join("\n")}`
+      : "";
+
+  return `# Objective\n${roleInstruction}${questionsBlock}`;
 }
