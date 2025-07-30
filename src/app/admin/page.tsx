@@ -1,3 +1,7 @@
+"use client"
+
+import { useState } from "react"
+import { usePaginatedReports } from "@/app/hooks/usePaginatedReports"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import {
@@ -9,8 +13,19 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-export default async function AdminDashboardPage() {
-  const reports: any[] = [] // Will be replaced with real Supabase/API data
+export default function AdminDashboardPage() {
+  
+  const [status, setStatus] = useState<string | null>(null)
+
+  const {
+    reports,
+    hasNextPage,
+    loading,
+    goNext,
+    goPrev,
+    canGoPrev,
+    page,
+  } = usePaginatedReports(status)
 
   return (
     <div className="p-6">
@@ -60,11 +75,11 @@ export default async function AdminDashboardPage() {
 
           {/* Pagination */}
           <div className="flex justify-between items-center mt-6">
-            <Button variant="outline" size="sm" disabled>
+            <Button variant="outline" size="sm" onClick={goPrev} disabled={!canGoPrev}>
               ◀ Prev
             </Button>
-            <span className="text-sm text-muted-foreground">Page 1 of N</span>
-            <Button variant="outline" size="sm" disabled>
+            <span className="text-sm text-muted-foreground">Page {page}</span>
+            <Button variant="outline" size="sm" onClick={goNext} disabled={!hasNextPage}>
               Next ▶
             </Button>
           </div>

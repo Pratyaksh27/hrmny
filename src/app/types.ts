@@ -88,5 +88,14 @@ import { z } from "zod";
     firstName?: string;
     lastName?: string;
   }
+
+  export type Report = {
+    id: string
+    claimant: number
+    defendants: number[]
+    witnesses: number[]
+    created_at: string
+    status: string
+  }
   
   export type AllAgentConfigsType = Record<string, AgentConfig[]>;
