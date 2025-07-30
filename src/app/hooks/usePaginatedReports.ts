@@ -6,6 +6,7 @@ import { Report } from "@/app/types";
 export function usePaginatedReports(statusFilter: string | null = null) {
   const [reports, setReports] = useState<Report[]>([])
   const [cursor, setCursor] = useState<string | null>(null)
+  const [nextPageCursor, setNextPageCursor] = useState<string | null>(null) // future page cursor
   const [cursorStack, setCursorStack] = useState<string[]>([])
   const [hasNextPage, setHasNextPage] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(false)
@@ -27,26 +28,30 @@ export function usePaginatedReports(statusFilter: string | null = null) {
     const { data, nextCursor, hasNextPage } = await res.json()
 
     setReports(data)
-    setCursor(nextCursor)
+    setCursor(currentCursor || null)
+    if (currentCursor) {
+        // setCursorStack((prev) => [...prev, currentCursor])
+    }
+    setNextPageCursor(nextCursor || null)
     setHasNextPage(hasNextPage)
     setLoading(false)
   }
 
   const goNext = () => {
     console.log("usePaginatedReports: goNext called with cursor:", cursor)
-    if (cursor) {
-      setCursorStack((prev) => [...prev, cursor])
-      setPage((prev) => prev + 1)
-      fetchReports(cursor)
+    if (hasNextPage && nextPageCursor) {
+        setCursorStack((prev) => [...prev, cursor ?? "__null__"])
+        setPage((prev) => prev + 1)
+        fetchReports(nextPageCursor)
     }
   }
 
   const goPrev = () => {
     const newStack = [...cursorStack]
-    const prevCursor = newStack.pop() || null
+    const popped = newStack.pop()
+    const prevCursor = popped === "__null__" ? null : popped
     setCursorStack(newStack)
     setPage((prev) => Math.max(1, prev - 1))
-    // setCursor(prevCursor) // ✅ this is critical
     fetchReports(prevCursor)
   }
 
