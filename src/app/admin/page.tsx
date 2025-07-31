@@ -95,7 +95,7 @@ export default function AdminDashboardPage() {
                                 <strong>Number of Conversations:</strong> (x) {/* TODO: wire logic */}
                               </div>
                               <div className="flex gap-3 mt-2">
-                                <Button size="sm" variant="secondary">
+                                <Button size="sm">
                                   Download Transcripts
                                 </Button>
                                 <Button
