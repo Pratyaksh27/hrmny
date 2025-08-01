@@ -18,6 +18,8 @@ export default function AdminDashboardPage() {
   const [status, setStatus] = useState<string | null>(null)
   const [expandedReportId, setExpandedReportId] = useState<string | null>(null)
   const [generatedReports, setGeneratedReports] = useState<Record<string, boolean>>({})
+  const [generating, setGenerating] = useState<Record<string, boolean>>({});
+
 
   const {
     reports,
@@ -36,6 +38,33 @@ export default function AdminDashboardPage() {
   const trackGeneratedReport = (reportId: string) => {
     setGeneratedReports(prev => ({ ...prev, [reportId]: true }))
   }
+
+  const generateReport = async (reportId: string) => {
+  setGenerating(prev => ({ ...prev, [reportId]: true }));
+
+  try { 
+      const res = await fetch("/api/admin/reports/generate-summary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reportId }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error("Failed to generate report:", data.error);
+        alert(`Error: ${data.error}`);
+      } else {
+        trackGeneratedReport(reportId);
+      }
+    } catch (err) {
+      console.error("Network error:", err);
+      alert("Something went wrong while generating the report.");
+    } finally {
+      setGenerating(prev => ({ ...prev, [reportId]: false }));
+    }
+  };
+
 
   return (
     <div className="p-6">
@@ -100,9 +129,10 @@ export default function AdminDashboardPage() {
                                 </Button>
                                 <Button
                                   size="sm"
-                                  onClick={() => trackGeneratedReport(report.id)}
+                                  onClick={() => generateReport(report.id)}
+                                  disabled={generating[report.id]}
                                 >
-                                  Generate Report
+                                  {generating[report.id] ? "Generating..." : "Generate Report"}
                                 </Button>
                                 <Button
                                   size="sm"
