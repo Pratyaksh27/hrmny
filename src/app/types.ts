@@ -19,6 +19,19 @@ import { z } from "zod";
     content: string;
   }
 
+  export type ConversationSummary = {
+    employeeId: number;
+    employeeName: string;
+    role: ParticipantRole;
+    normalizedTranscript: NormalizedTranscriptItem[];
+  }
+
+  export type GuidanceDocument = {
+    title: string;
+    type: "labor_law" | "company_policy";
+    content: string;
+  }
+
   export interface ServerEvent {
     type: string;
     event_id?: string;
@@ -80,7 +93,7 @@ import { z } from "zod";
       | { name: string; publicDescription: string }[];
   }
 
-  export type ParticipantRole = "claimant" | "defendant" | "witness" | "hr" | "manager" | "other";
+  export type ParticipantRole = "claimant" | "defendant" | "witness" | "hr" | "manager" | "other" | "unknown";
 
   export type TargetParticipant = {
     employeeId: number;
