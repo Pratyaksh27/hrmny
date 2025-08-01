@@ -29,13 +29,13 @@ export async function getEmployeeIdFromConversation(
       .single();
 
     if (error) {
-      console.error("Error fetching employee ID:", error);
+      console.error("utils.ts: Error fetching employee ID:", error);
       return 0;
     }
 
     return data?.participant || null;
   } catch (error) {
-    console.error("Unexpected error fetching employee ID:", error);
+    console.error("utils.ts: Unexpected error fetching employee ID:", error);
     return 0;
   }
 }
@@ -45,8 +45,8 @@ export async function getEmployeeIdFromConversation(
  */
 export async function getFirstNameLastNameFromEmployeeId(
   employeeId: number
-): Promise<{ firstName: string; lastName: string } | null> {
-  console.log("UTILS: Fetching employee name for Id:", employeeId);
+): Promise<{ firstName: string; lastName: string } | null > {
+  console.log("utils.ts: Fetching employee name for Id:", employeeId);
   try {
     const { data, error } = await supabase
       .from("employees")
@@ -55,7 +55,7 @@ export async function getFirstNameLastNameFromEmployeeId(
       .single();
 
     if (error) {
-      console.error("Error fetching employee name:", error);
+      console.error("utils.ts: Error fetching employee name:", error);
       return null;
     }
 
@@ -64,7 +64,7 @@ export async function getFirstNameLastNameFromEmployeeId(
       lastName: data?.last_name || "",
     };
   } catch (error) {
-    console.error("Unexpected error fetching employee name:", error);
+    console.error("utils.ts: Unexpected error fetching employee name:", error);
     return null;
   }
 } 
