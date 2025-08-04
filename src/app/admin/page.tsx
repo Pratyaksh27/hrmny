@@ -5,6 +5,8 @@ import React from "react";
 import { usePaginatedReports } from "@/app/hooks/usePaginatedReports"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import GeneratedReportModal from "@/app/components/GeneratedReportModal";
+
 import {
   Table,
   TableBody,
@@ -19,6 +21,30 @@ export default function AdminDashboardPage() {
   const [expandedReportId, setExpandedReportId] = useState<string | null>(null)
   const [generatedReports, setGeneratedReports] = useState<Record<string, boolean>>({})
   const [generating, setGenerating] = useState<Record<string, boolean>>({});
+  // State to manage viewing summary
+  const [viewingSummary, setViewingSummary] = useState<string | null>(null);
+  const [loadingSummary, setLoadingSummary] = useState<boolean>(false);
+
+  const viewReport = async (reportId: string) => {
+    setLoadingSummary(true);
+    try {
+      const res = await fetch(`/api/admin/reports/${reportId}/summary`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error("Failed to fetch summary:", data.error);
+        alert(`Error: ${data.error}`);
+        return;
+      }
+
+      setViewingSummary(data.summary);
+    } catch (err) {
+      console.error("Network error:", err);
+      alert("Something went wrong while fetching the report summary.");
+    } finally {
+      setLoadingSummary(false);
+    }
+  };
 
 
   const {
@@ -137,8 +163,9 @@ export default function AdminDashboardPage() {
                                 <Button
                                   size="sm"
                                   disabled={!generatedReports[report.id]}
+                                  onClick={() => viewReport(report.id)}
                                 >
-                                  View Report
+                                  {loadingSummary ? "Loading..." : "View Report"}
                                 </Button>
                               </div>
                             </div>
@@ -162,6 +189,12 @@ export default function AdminDashboardPage() {
               Next ▶
             </Button>
           </div>
+          {viewingSummary && (
+            <GeneratedReportModal
+              summary={viewingSummary}
+              onClose={() => setViewingSummary(null)}
+            />
+          )}
         </CardContent>
       </Card>
     </div>
