@@ -114,12 +114,17 @@ export default function VoiceSessionManager({ ephemeralKey, reportId,  conversat
 
         const turnDetection = {
             type: "server_vad",
-            threshold: 0.5,
+            threshold: 0.75,
             prefix_padding_ms: 300,
-            silence_duration_ms: 200,
+            silence_duration_ms: 2500,
             create_response: true,
         }
 
+        // Session Update event is somehow necessary to get the user's audio to be transcribed
+        // whisper-1 is the model used for audio transcription
+        // The input_audio_noise_reduction is set to near_field (assuming the user is using a headset or microphone close to their mouth)
+        // If the user is using a speaker or is in a conference room, we can set it to far_field
+        // TODO: Add a setting to allow the user to choose between near_field and far_field
         const sessionUpdateEvent = {
             type: "session.update",
             session: {
@@ -127,6 +132,9 @@ export default function VoiceSessionManager({ ephemeralKey, reportId,  conversat
                 instructions: instructions,
                 voice: "sage",
                 input_audio_transcription: { model: "whisper-1" },
+                input_audio_noise_reduction : {
+                    type: "near_field",
+                },
                 turn_detection: turnDetection,
             },
         }
@@ -153,7 +161,22 @@ export default function VoiceSessionManager({ ephemeralKey, reportId,  conversat
                 }
             }
 
-            const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            // Below we are using WebRTC's getUserMedia (implemented by) to get the microphone stream
+            // and add it to the peer connection.
+            // This is necessary to send the user's audio to the server for transcription.
+            // We are also setting the audio constraints to ensure that the audio is of good quality.
+            // We are using echoCancellation, noiseSuppression, and autoGainControl to improve the audio quality.
+            // The sampleRate is set to 16000 and channelCount to 1
+            // to ensure that the audio is in a format that the server can process.
+            const micStream = await navigator.mediaDevices.getUserMedia({ 
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true,
+                    sampleRate: 16000,
+                    channelCount: 1,
+                }, 
+            });
             micStream.getTracks().forEach(track => {
                 pc.addTrack(track, micStream);
             });
@@ -228,3 +251,17 @@ export default function VoiceSessionManager({ ephemeralKey, reportId,  conversat
         </div>
     );
 }
+
+
+/**
+ * Noise Reduction Settings:
+ * - near_field: For close microphone use (e.g., headset)
+ * - far_field: For distant microphone use (e.g., speaker)
+ * - threshold: Adjusts sensitivity for voice activity detection. Higher values reduce false positives but may miss some speech.
+ * - echoCancellation: Reduces echo in audio input.
+ * - noiseSuppression: Reduces background noise in audio input. (keyboard, fan, AC noise etc.  )
+ * - autoGainControl: Automatically adjusts mic sensitivity. If someone speaks too softly, it will boost the volume.
+ * - sampleRate: Set to 16000 for better compatibility with Whisper.
+ * - channelCount: Set to 1 for mono audio, which is sufficient for voice.
+
+ */
