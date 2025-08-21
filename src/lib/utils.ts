@@ -203,6 +203,9 @@ export async function buildVoiceAgentInstructions(
   const greetingInstruction = employeeName ? `Always greet the employee by their first name, ${employeeName.firstName} 
   when referring to them . Start the conversation with saying "Hi ${employeeName.firstName}"` : "";
 
+  const all_participant_names = await getAllParticipantNames(reportId);
+  console.log("BUILD INSTRUCTIONS: all_participant_names:", all_participant_names);
+
   const roleObjectiveInstruction = getObjectiveInstruction(
     employeeRole,
     isFirstConversationFlag,
@@ -260,4 +263,93 @@ export function getObjectiveInstruction(
       : "";
 
   return `# Objective\n${roleInstruction}${questionsBlock}`;
+}
+
+
+/**
+ * getAllParticipantNames: Retrieve all participant names in a report.
+ * Returns the role, first name, and last name of each participant in the report.
+ * @param reportId The ID of the report to fetch participants for.
+ * @returns An array of objects containing the role, first name, and last name of each
+ */
+export async function getAllParticipantNames(reportId:string): Promise<{ role: ParticipantRole; firstName: string; lastName: string }[]> {
+  try {
+    const { data: participants, error: participantsError } = await supabase
+      .from("reports")
+      .select("claimant, defendants, witnesses")
+      .eq("id", reportId)
+      .single();
+
+    if (participantsError || !participants) {
+      console.error("utils.ts: Error fetching participants:", participantsError);
+      return [];
+    }
+
+    // Fetch the IDs of all the participants from the report
+    const { claimant, defendants, witnesses } = participants;
+    const participantIds = [
+      claimant,
+      ...(defendants || []),
+      ...(witnesses || []),
+    ];
+
+    if (participantIds.length === 0) {
+      console.warn("utils.ts: No participants found for report:", reportId);
+      return [];
+    }
+
+    // Fetch the names of all participants using their IDs
+    const { data: employee, error: namesError } = await supabase
+      .from("employees")
+      .select("id, first_name, last_name")
+      .in("id", participantIds);
+    
+    if (namesError || !employee) {
+      console.error("utils.ts: Error fetching participant names:", namesError);
+      return [];
+    }
+
+    // Map the IDs to Names
+    const idToName = new Map<number, { firstName: string; lastName: string }>();
+    for (const emp of employee) {
+      idToName.set(emp.id, { firstName: emp.first_name, lastName: emp.last_name });
+    }
+
+    // Create the final array of participant names with roles
+    const result : { role: ParticipantRole; firstName: string; lastName: string }[] = [];
+    if (claimant && idToName.has(claimant)) {
+      result.push({
+        role: "claimant",
+        firstName: idToName.get(claimant)!.firstName, // The ! operator is used to tell the compliler that the value is not undefined
+        lastName: idToName.get(claimant)!.lastName,
+      });
+    }
+
+    for (const defendant of defendants || []) {
+      if (idToName.has(defendant)) {
+        result.push({
+          role: "defendant",
+          firstName: idToName.get(defendant)!.firstName,
+          lastName: idToName.get(defendant)!.lastName,
+        });
+      }
+    }
+
+    for (const witness of witnesses || []) {
+      if (idToName.has(witness)) {
+        result.push({
+          role: "witness",
+          firstName: idToName.get(witness)!.firstName,
+          lastName: idToName.get(witness)!.lastName,
+        });
+      }
+    } 
+    
+    return result;
+
+  } catch (error) {
+    console.error("utils.ts: Error fetching participant names:", error);
+    return [];
+  }
+  return [];
 }
