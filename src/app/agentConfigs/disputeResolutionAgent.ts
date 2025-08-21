@@ -281,6 +281,16 @@ Close with:
 
 “Next, let me investigate this incident. HR will follow up once the review is complete.”`;
 
+export const nameHandlingPolicy = `# Name Handling Policy
+- You have been provided with the names of the people(particiopants) involved in the report
+- You have been provided with the roles (claimant, defendant, witness) and full names of the people(participants) involved in the report 
+- Important: Use the exact spellings of the names as provided to you above
+- Use full names of the people on the first mention and first names thereafter
+- Do NOT invent new spellings
+- If you hear a new name, ask for the spelling and write it down exactly as provided
+- For the new name heard, after it is spelled out, confirm with the user: "Just to confirm, the spelling is [spell out the name again] ?" 
+`
+
 export const roleInstructionsClaimantFirstConversation = `## Complainant
 Start With:
 “Thank you for joining this call. I’m here to listen and understand your perspective regarding any concerns or incidents you’d like to report. This is a confidential, neutral process. We have a strict no-retaliation policy.”
