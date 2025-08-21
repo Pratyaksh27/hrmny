@@ -3,7 +3,7 @@ import { twMerge } from "tailwind-merge"
 import { supabase } from "@/lib/supabase"
 import { ParticipantRole } from "@/app/types"
 import employeeDisputeAgent from "@/app/agentConfigs/disputeResolutionAgent";
-import { identityInstruction, toneLanguageInstruction, roleInstructionsClaimantFirstConversation, roleInstructionsDefendant, 
+import { identityInstruction, toneLanguageInstruction, nameHandlingPolicy, roleInstructionsClaimantFirstConversation, roleInstructionsDefendant, 
   roleInstructionsWitness, conversationStructureInstruction, summaryClosureInstruction, signaturePhrasesInstruction, redFlagsInstruction, 
   outcomesInstruction, sampleConversations
  } from "@/app/agentConfigs/disputeResolutionAgent";
@@ -212,11 +212,15 @@ export async function buildVoiceAgentInstructions(
     questions_to_ask
   );
 
+  const participantRoster = formatParticipantRosterForInstructions(all_participant_names);
+
   const fullInstruction = [
     
     identityInstruction,
     toneLanguageInstruction,
     greetingInstruction,
+    participantRoster,
+    nameHandlingPolicy,
     roleObjectiveInstruction,
     conversationStructureInstruction,  
     summaryClosureInstruction,
@@ -271,6 +275,15 @@ export function getObjectiveInstruction(
  * Returns the role, first name, and last name of each participant in the report.
  * @param reportId The ID of the report to fetch participants for.
  * @returns An array of objects containing the role, first name, and last name of each
+ * Example return value:
+ * [
+    { role: "claimant", firstName: "Juhi", lastName: "Dubey" },
+    { role: "defendant", firstName: "Jack", lastName: "Smith" },
+    { role: "defendant", firstName: "John", lastName: "Doe" },
+    { role: "witness", firstName: "Varun", lastName: "Kumar" },
+    { role: "witness", firstName: "Maria", lastName: "Garcia" }
+    ]
+ * 
  */
 export async function getAllParticipantNames(reportId:string): Promise<{ role: ParticipantRole; firstName: string; lastName: string }[]> {
   try {
@@ -352,4 +365,61 @@ export async function getAllParticipantNames(reportId:string): Promise<{ role: P
     return [];
   }
   return [];
+}
+
+
+/**
+ * 
+ * @param participants Array of participants with their roles and names
+ * @returns Formatted string for inclusion in agent instructions
+ * The input is received from the getAllParticipantNames function's output.
+ * The output is a formatted string that groups participants by their roles and lists their names.
+ * Example input:
+ * [
+    { role: "claimant", firstName: "Juhi", lastName: "Dubey" },
+    { role: "defendant", firstName: "Jack", lastName: "Smith" },
+    { role: "defendant", firstName: "John", lastName: "Doe" },
+    { role: "witness", firstName: "Varun", lastName: "Kumar" },
+    { role: "witness", firstName: "Maria", lastName: "Garcia" }
+    ]
+*
+* Example output:
+* # Participants in This Case (Canonical Spellings)
+  - Claimant: Juhi Dubey
+  - Defendants: Jack Smith, John Doe
+  - Witnesses: Varun Kumar, Maria Garcia
+*/
+
+export function formatParticipantRosterForInstructions(participants: { role: ParticipantRole; firstName: string; lastName: string }[]): string {
+  const grouped = {
+    claimant: null as string | null,
+    defendants: [] as string[],
+    witnesses: [] as string[],
+  };
+
+  for (const p of participants) {
+    const fullName = `${p.firstName} ${p.lastName}`;
+    if(p.role === "claimant") {
+      grouped.claimant = fullName;
+    } else if (p.role === "defendant") {
+      grouped.defendants.push(fullName);
+    } else if (p.role === "witness") {
+      grouped.witnesses.push(fullName); 
+    }   
+  }
+
+  const participantsInfo: string[] = [];
+  participantsInfo.push("# Participants in This Case (Canonical Spellings)");
+  if (grouped.claimant) {
+    participantsInfo.push(`- Claimant: ${grouped.claimant}`);
+  }
+  if (grouped.defendants.length > 0) {
+    participantsInfo.push(`- Defendants: ${grouped.defendants.join(", ")}`);
+  }
+  if (grouped.witnesses.length > 0) {
+    participantsInfo.push(`- Witnesses: ${grouped.witnesses.join(", ")}`);
+  }
+  participantsInfo.push("Use the exact spellings of the names as provided above.");
+  return participantsInfo.join("\n");
+
 }
