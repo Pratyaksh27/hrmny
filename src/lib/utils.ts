@@ -3,7 +3,7 @@ import { twMerge } from "tailwind-merge"
 import { supabase } from "@/lib/supabase"
 import { ParticipantRole } from "@/app/types"
 import employeeDisputeAgent from "@/app/agentConfigs/disputeResolutionAgent";
-import { identityInstruction, toneLanguageInstruction, nameHandlingPolicy, roleInstructionsClaimantFirstConversation, roleInstructionsDefendant, 
+import { languageInstruction, identityInstruction, toneLanguageInstruction, nameHandlingPolicy, roleInstructionsClaimantFirstConversation, roleInstructionsDefendant, 
   roleInstructionsWitness, conversationStructureInstruction, summaryClosureInstruction, signaturePhrasesInstruction, redFlagsInstruction, 
   outcomesInstruction, sampleConversations
  } from "@/app/agentConfigs/disputeResolutionAgent";
@@ -215,7 +215,7 @@ export async function buildVoiceAgentInstructions(
   const participantRoster = formatParticipantRosterForInstructions(all_participant_names);
 
   const fullInstruction = [
-    
+    languageInstruction,
     identityInstruction,
     toneLanguageInstruction,
     greetingInstruction,
