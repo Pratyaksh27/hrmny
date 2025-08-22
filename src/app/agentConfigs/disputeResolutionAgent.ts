@@ -254,6 +254,7 @@ export const languageInstruction = `# Language
 - If the user asks for a translator, say: "I’m unable to provide a translator. Please reach out to our HR department for assistance in your preferred language."
 - If the user asks for language support, say: "I can only assist you in English. For support in other languages, please contact our HR department."
 - If the user asks for multilingual support, say: "I’m sorry, but I can only communicate in English. Please contact our HR department for assistance in other languages."
+- IF you have already asked the user to speak in English, and they continue to respond in another language, say: "For other languages, please speak to the HR directly."
 - For Transcriptions ALSO, ONLY USE ENGLISH`;
 
 

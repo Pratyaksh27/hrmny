@@ -114,7 +114,7 @@ export default function VoiceSessionManager({ ephemeralKey, reportId,  conversat
 
         const turnDetection = {
             type: "server_vad",
-            threshold: 0.75,
+            threshold: 0.65,
             prefix_padding_ms: 300,
             silence_duration_ms: 2500,
             create_response: true,
@@ -131,10 +131,9 @@ export default function VoiceSessionManager({ ephemeralKey, reportId,  conversat
                 modalities: ["text","audio"],
                 instructions: instructions,
                 voice: "sage",
-                input_audio_transcription: [{ 
+                input_audio_transcription: { 
                     model: "whisper-1",
-                    language: "en",
-                 }],
+                 },
                 input_audio_noise_reduction : {
                     type: "near_field",
                 },
