@@ -131,6 +131,7 @@ export default function VoiceSessionManager({ ephemeralKey, reportId,  conversat
                 modalities: ["text","audio"],
                 instructions: instructions,
                 voice: "sage",
+                speed: 1.3,
                 input_audio_transcription: { 
                     model: "whisper-1",
                  },
