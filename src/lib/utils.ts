@@ -203,7 +203,7 @@ export async function buildVoiceAgentInstructions(
   const greetingInstruction = employeeName ? `Always greet the employee by their first name, ${employeeName.firstName} 
   when referring to them . Start the conversation with saying "Hi ${employeeName.firstName}"` : "";
 
-  const all_participant_names = await getAllParticipantNames(reportId);
+  const all_participant_names = await getAllParticipantNamesAndEmails(reportId);
   console.log("BUILD INSTRUCTIONS: all_participant_names:", all_participant_names);
 
   const roleObjectiveInstruction = getObjectiveInstruction(
@@ -285,7 +285,7 @@ export function getObjectiveInstruction(
     ]
  * 
  */
-export async function getAllParticipantNames(reportId:string): Promise<{ role: ParticipantRole; firstName: string; lastName: string }[]> {
+export async function getAllParticipantNamesAndEmails(reportId:string): Promise<{ role: ParticipantRole; firstName: string; lastName: string; emailID: string }[]> {
   try {
     const { data: participants, error: participantsError } = await supabase
       .from("reports")
@@ -314,7 +314,7 @@ export async function getAllParticipantNames(reportId:string): Promise<{ role: P
     // Fetch the names of all participants using their IDs
     const { data: employee, error: namesError } = await supabase
       .from("employees")
-      .select("id, first_name, last_name")
+      .select("id, first_name, last_name, email_address")
       .in("id", participantIds);
     
     if (namesError || !employee) {
@@ -323,18 +323,19 @@ export async function getAllParticipantNames(reportId:string): Promise<{ role: P
     }
 
     // Map the IDs to Names
-    const idToName = new Map<number, { firstName: string; lastName: string }>();
+    const idToName = new Map<number, { firstName: string; lastName: string; emailID: string }>();
     for (const emp of employee) {
-      idToName.set(emp.id, { firstName: emp.first_name, lastName: emp.last_name });
+      idToName.set(emp.id, { firstName: emp.first_name, lastName: emp.last_name, emailID: emp.email_address });
     }
 
     // Create the final array of participant names with roles
-    const result : { role: ParticipantRole; firstName: string; lastName: string }[] = [];
+    const result : { role: ParticipantRole; firstName: string; lastName: string; emailID: string }[] = [];
     if (claimant && idToName.has(claimant)) {
       result.push({
         role: "claimant",
         firstName: idToName.get(claimant)!.firstName, // The ! operator is used to tell the compliler that the value is not undefined
         lastName: idToName.get(claimant)!.lastName,
+        emailID: idToName.get(claimant)!.emailID,
       });
     }
 
@@ -344,6 +345,7 @@ export async function getAllParticipantNames(reportId:string): Promise<{ role: P
           role: "defendant",
           firstName: idToName.get(defendant)!.firstName,
           lastName: idToName.get(defendant)!.lastName,
+          emailID: idToName.get(defendant)!.emailID,
         });
       }
     }
@@ -354,6 +356,7 @@ export async function getAllParticipantNames(reportId:string): Promise<{ role: P
           role: "witness",
           firstName: idToName.get(witness)!.firstName,
           lastName: idToName.get(witness)!.lastName,
+          emailID: idToName.get(witness)!.emailID,
         });
       }
     } 
@@ -390,7 +393,7 @@ export async function getAllParticipantNames(reportId:string): Promise<{ role: P
   - Witnesses: Varun Kumar, Maria Garcia
 */
 
-export function formatParticipantRosterForInstructions(participants: { role: ParticipantRole; firstName: string; lastName: string }[]): string {
+export function formatParticipantRosterForInstructions(participants: { role: ParticipantRole; firstName: string; lastName: string; emailID: string }[]): string {
   const grouped = {
     claimant: null as string | null,
     defendants: [] as string[],
@@ -422,4 +425,36 @@ export function formatParticipantRosterForInstructions(participants: { role: Par
   participantsInfo.push("Use the exact spellings of the names as provided above.");
   return participantsInfo.join("\n");
 
+}
+
+/**
+ * 
+ * @param reportId 
+ * @param conversationId 
+ * @returns void
+ * sendNotifications checks if the conversation is the first one in the report.
+ * If it is, it returns.
+ * If not, it fetches all participant names and email addresses in the report.
+ * It then logs a message indicating that an email would be sent to each defendant and witness.
+ * Note: The actual email sending functionality is not implemented;
+ */
+
+export async function sendNotifications(reportId: string, conversationId: string) {
+  try {
+    const isFirst = await isFirstConversation(reportId, conversationId);
+    if (!isFirst) {
+      console.log(`🔕 Not the first conversation for report ${reportId}, skipping notifications.`);
+      return;
+    }
+
+    const participants = await getAllParticipantNamesAndEmails(reportId);
+
+    for (const p of participants) {
+      if (p.role === "defendant" || p.role === "witness") {
+        console.log(`📧 Sending email to ${p.firstName} ${p.lastName} at address ${p.emailID}`);
+      }
+    }
+  } catch (error) {
+    console.error("utils.ts: Error in sendNotifications:", error);
+  }
 }
