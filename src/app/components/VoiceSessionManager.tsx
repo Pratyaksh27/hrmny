@@ -4,7 +4,7 @@ import { useHandleServerEvent } from '@/app/hooks/useHandleServerEvent';
 import VoiceCallPanel from './VoiceCallPanel';
 import Transcript from './Transcript';
 import { useTranscript } from "@/app/contexts/TranscriptContext";
-import { buildVoiceAgentInstructions } from "@/lib/utils";
+import { buildVoiceAgentInstructions, sendNotifications } from "@/lib/utils";
 import { useNavigationGuard } from "next-navigation-guard";
 import { TranscriptItem } from "@/app/types";
 import { generateDerivedQuestionsFromTranscript } from "@/services/generateDerivedQuestions";
@@ -240,6 +240,7 @@ export default function VoiceSessionManager({ ephemeralKey, reportId,  conversat
         setSessionStatus('Disconnected');
         setDataChannel(null);
         await uploadTranscript(); // Upload the transcript when ending the session
+        await sendNotifications(reportId, conversationId); // Send email notifications to all other participants to have their end of the conversation
     }
       
     
