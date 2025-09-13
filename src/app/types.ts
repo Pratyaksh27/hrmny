@@ -110,5 +110,10 @@ import { z } from "zod";
     created_at: string
     status: string
   }
+
+  export type EmailTemplate = { 
+    subject: string;
+    body: string; 
+  }
   
   export type AllAgentConfigsType = Record<string, AgentConfig[]>;
