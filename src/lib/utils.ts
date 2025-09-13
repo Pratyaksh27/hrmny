@@ -1,7 +1,8 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { supabase } from "@/lib/supabase"
-import { ParticipantRole } from "@/app/types"
+import { ParticipantRole, EmailTemplate } from "@/app/types"
+import { getEmailTemplateByRole } from "@/templates/email/index"
 import employeeDisputeAgent from "@/app/agentConfigs/disputeResolutionAgent";
 import { languageInstruction, identityInstruction, toneLanguageInstruction, nameHandlingPolicy, roleInstructionsClaimantFirstConversation, roleInstructionsDefendant, 
   roleInstructionsWitness, conversationStructureInstruction, summaryClosureInstruction, signaturePhrasesInstruction, redFlagsInstruction, 
@@ -450,11 +451,31 @@ export async function sendNotifications(reportId: string, conversationId: string
     const participants = await getAllParticipantNamesAndEmails(reportId);
 
     for (const p of participants) {
+      const template = getEmailTemplateByRole(p.role);
       if (p.role === "defendant" || p.role === "witness") {
         console.log(`📧 Sending email to ${p.firstName} ${p.lastName} at address ${p.emailID}`);
+        console.log("Email Subject:", template?.subject);
+        console.log("Email Body:", template?.body);
+        // FUTURE: Integrate with an email service provider to send the actual email.
       }
     }
   } catch (error) {
     console.error("utils.ts: Error in sendNotifications:", error);
   }
 }
+
+/*
+*/
+export function getEmailTemplateForRole(role: ParticipantRole): EmailTemplate | null {
+  const template = getEmailTemplateByRole(role);
+  console.log("utils.ts: Retrieved email template for role", role, ":", template);
+  if(!template) {
+    console.warn("utils.ts: No email template found for role:", role);
+    return null
+  }
+  return template;
+}
+
+
+
+
