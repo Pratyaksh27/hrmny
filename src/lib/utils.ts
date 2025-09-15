@@ -9,6 +9,7 @@ import { languageInstruction, identityInstruction, toneLanguageInstruction, name
   outcomesInstruction, sampleConversations
  } from "@/app/agentConfigs/disputeResolutionAgent";
 
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
@@ -455,8 +456,7 @@ export async function sendNotifications(reportId: string, conversationId: string
         const email = createEmailContent(p.role, p.firstName);
         if (email) {
             console.log(`UTILS: 📧 Sending email to ${p.firstName} ${p.lastName} at address ${p.emailID}`);
-            console.log("Email Subject:", email.subject);
-            console.log("Email Body:", email.body);
+            await sendEmail(p.emailID, email.subject, email.body);
             // FUTURE: Integrate with email service to send the email.
         }
       }
@@ -489,6 +489,28 @@ export function createEmailContent(role: ParticipantRole, firstName: string, lin
     body: bodyWithName
   };
 }
+
+
+export async function sendEmail(to: string, subject: string, body: string) {
+  try {
+    const res = await fetch('/api/email/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ to, subject, body }),
+    });
+
+    if (!res.ok) {
+      console.error("utils.ts sendEmail: Error sending email:", await res.text());
+    } else {
+      console.log(`utils.ts sendEmail: Email sent successfully to ${to}`);
+    }
+  } catch (error) {
+    console.error("utils.ts sendEmail: Unexpected error sending email:", error);
+  }
+}
+
 
 
 
