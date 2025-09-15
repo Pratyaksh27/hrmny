@@ -11,6 +11,9 @@ export const witnessHtml = `
             <p style="margin:0 0 16px 0;font-size:14px;line-height:22px;color:#374151;">
               You’ve been identified as a <strong>witness</strong> in an HR case. Please complete a short interview
               with HRMNY using the secure link below.
+              The interview should take about 10-15 minutes to complete.
+
+              Please Copy and Paste this Report ID in the UI to begin your interview: <strong>{{reportId}}</strong>
             </p>
           </td>
         </tr>
