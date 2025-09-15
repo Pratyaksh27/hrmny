@@ -451,12 +451,14 @@ export async function sendNotifications(reportId: string, conversationId: string
     const participants = await getAllParticipantNamesAndEmails(reportId);
 
     for (const p of participants) {
-      const template = getEmailTemplateByRole(p.role);
       if (p.role === "defendant" || p.role === "witness") {
-        console.log(`📧 Sending email to ${p.firstName} ${p.lastName} at address ${p.emailID}`);
-        console.log("Email Subject:", template?.subject);
-        console.log("Email Body:", template?.body);
-        // FUTURE: Integrate with an email service provider to send the actual email.
+        const email = createEmailContent(p.role, p.firstName);
+        if (email) {
+            console.log(`UTILS: 📧 Sending email to ${p.firstName} ${p.lastName} at address ${p.emailID}`);
+            console.log("Email Subject:", email.subject);
+            console.log("Email Body:", email.body);
+            // FUTURE: Integrate with email service to send the email.
+        }
       }
     }
   } catch (error) {
@@ -464,18 +466,29 @@ export async function sendNotifications(reportId: string, conversationId: string
   }
 }
 
-/*
-*/
-export function getEmailTemplateForRole(role: ParticipantRole): EmailTemplate | null {
+/**
+ *          
+ * @param role 
+ * @param firstName 
+ * @param link 
+ * @returns  EmailTemplate | null
+ * This function creates the email content by replacing placeholders for name and link in the template with actual values.
+ * It takes the role, first name, and a unique link as inputs.
+ * Uses role to get the template, then replaces {name} and {link} in the template body.
+ * If no template is found for the role, it returns null and logs a warning.
+ */
+export function createEmailContent(role: ParticipantRole, firstName: string, link: string = "https://demo.hrmny-hr.com/revisit-case"): EmailTemplate | null {
   const template = getEmailTemplateByRole(role);
-  console.log("utils.ts: Retrieved email template for role", role, ":", template);
-  if(!template) {
-    console.warn("utils.ts: No email template found for role:", role);
-    return null
+  if (!template){
+    console.warn("utils.ts createEmailContent :  No email template found for role:", role);
+    return null;
   }
-  return template;
+  const bodyWithName = template.body.replaceAll("{{name}}", firstName).replaceAll("{{link}}", link);
+  return {
+    subject: template.subject,
+    body: bodyWithName
+  };
 }
-
 
 
 
