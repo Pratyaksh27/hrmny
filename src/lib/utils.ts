@@ -453,7 +453,7 @@ export async function sendNotifications(reportId: string, conversationId: string
 
     for (const p of participants) {
       if (p.role === "defendant" || p.role === "witness") {
-        const email = createEmailContent(p.role, p.firstName);
+        const email = createEmailContent(p.role, p.firstName, reportId);
         if (email) {
             console.log(`UTILS: 📧 Sending email to ${p.firstName} ${p.lastName} at address ${p.emailID}`);
             await sendEmail(p.emailID, email.subject, email.body);
@@ -477,13 +477,13 @@ export async function sendNotifications(reportId: string, conversationId: string
  * Uses role to get the template, then replaces {name} and {link} in the template body.
  * If no template is found for the role, it returns null and logs a warning.
  */
-export function createEmailContent(role: ParticipantRole, firstName: string, link: string = "https://demo.hrmny-hr.com/revisit-case"): EmailTemplate | null {
+export function createEmailContent(role: ParticipantRole, firstName: string, reportID: string, link: string = "https://demo.hrmny-hr.com/revisit-case"): EmailTemplate | null {
   const template = getEmailTemplateByRole(role);
   if (!template){
     console.warn("utils.ts createEmailContent :  No email template found for role:", role);
     return null;
   }
-  const bodyWithName = template.body.replaceAll("{{name}}", firstName).replaceAll("{{link}}", link);
+  const bodyWithName = template.body.replaceAll("{{name}}", firstName).replaceAll("{{link}}", link).replaceAll("{{reportId}}", reportID);
   return {
     subject: template.subject,
     body: bodyWithName
