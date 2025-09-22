@@ -4,7 +4,10 @@ export default function WelcomeContent() {
   return (
     <div className="h-full w-full bg-bgCanvas text-textPrimary p-7">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-lg font-bold mb-5">Welcome</h1>
+        <div className="justify-center flex mb-6">
+          <h1 className="text-lg font-bold mb-5">Welcome</h1>
+        </div>
+        
         <p className="text-base font-regular mb-4">
           HRMNY is your safe and confidential space to share what’s on your mind—free from bias or judgment.
         </p>
