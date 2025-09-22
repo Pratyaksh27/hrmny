@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Menu, MenuItem, MenuLabel } from "@headlessui/react";
+import { Menu } from "@headlessui/react";
 import { MenuIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 
