@@ -1,19 +1,19 @@
+// src/components/screens/ApplicationForm.tsx
+
 'use client';
 
-import React from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
-
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import {
   Form,
   FormField,
   FormItem,
   FormLabel,
   FormControl,
-  FormMessage
+  FormMessage,
 } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 type FormData = {
   claimantEmployeeId: string;
@@ -21,7 +21,8 @@ type FormData = {
   witnessEmployeeId?: string;
 };
 
-function ApplicationForm() {
+export default function ApplicationForm() {
+  const router = useRouter();
   const form = useForm<FormData>({
     defaultValues: {
       claimantEmployeeId: '',
@@ -29,8 +30,6 @@ function ApplicationForm() {
       witnessEmployeeId: '',
     },
   });
-
-  const router = useRouter();
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -41,33 +40,37 @@ function ApplicationForm() {
           ...data,
           claimantEmployeeId: parseInt(data.claimantEmployeeId, 10),
           defendantEmployeeId: parseInt(data.defendantEmployeeId, 10),
-          witnessEmployeeId: data.witnessEmployeeId ? parseInt(data.witnessEmployeeId, 10) : undefined,
-        })
+          witnessEmployeeId: data.witnessEmployeeId
+            ? parseInt(data.witnessEmployeeId, 10)
+            : undefined,
+        }),
       });
 
-      if (!res.ok) {
-        throw new Error(`Failed to start Report: ${res.statusText}`);
-      }
+      if (!res.ok) throw new Error(`Failed: ${res.statusText}`);
 
       const { reportId, conversationId } = await res.json();
       router.push(`/report/${reportId}/conversation/${conversationId}`);
-    } catch (error) {
-      console.error('Error submitting form and starting the report:', error);
+    } catch (err) {
+      console.error('Error submitting form:', err);
     }
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <h2 className="text-2xl font-semibold text-gray-900 text-center">
-          Start a New Case
-        </h2>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-6 bg-bgCanvas text-textPrimary p-8 rounded-lg shadow-md max-w-xl mx-auto"
+      >
+        <h2 className="text-lg font-bold text-center">Start a New Case</h2>
+
         <FormField
           name="claimantEmployeeId"
           control={form.control}
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Your Employee ID</FormLabel>
+              <FormLabel className="text-sm text-textMuted">
+                Your Employee ID
+              </FormLabel>
               <FormControl>
                 <Input {...field} required />
               </FormControl>
@@ -81,7 +84,9 @@ function ApplicationForm() {
           control={form.control}
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Other Party's Employee ID</FormLabel>
+              <FormLabel className="text-sm text-textMuted">
+                Other Party's Employee ID
+              </FormLabel>
               <FormControl>
                 <Input {...field} required />
               </FormControl>
@@ -95,7 +100,9 @@ function ApplicationForm() {
           control={form.control}
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Witness' Employee ID (Optional)</FormLabel>
+              <FormLabel className="text-sm text-textMuted">
+                Witness' Employee ID (Optional)
+              </FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
@@ -104,12 +111,10 @@ function ApplicationForm() {
           )}
         />
 
-        <Button type="submit" className="w-full">
+        <Button type="submit" className="w-full bg-brand text-buttonText">
           Start New Case
         </Button>
       </form>
     </Form>
   );
 }
-
-export default ApplicationForm;
