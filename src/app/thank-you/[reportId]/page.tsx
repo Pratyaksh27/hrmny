@@ -1,4 +1,5 @@
 // src/app/thank-you/[reportId]/page.tsx
+"use client";
 
 import AppShell from '@/components/layout/AppShell';
 import ThankYouContent from '@/components/screens/ThankYouContent';
