@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import AppShell from "@/components/layout/AppShell";
 import SidebarCallControls from "@/components/conversation/SideBarCallControls";
 import VoiceSessionManager, { VoiceSessionHandle } from "@/components/conversation/VoiceSessionManager";
@@ -11,6 +11,7 @@ export default function ConversationPage() {
   const [ephemeralKey, setEphemeralKey] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   const managerRef = useRef<VoiceSessionHandle>(null);
   const [status, setStatus] = useState<"Not Started" | "Connecting" | "Connected" | "Disconnected">("Not Started");
@@ -59,6 +60,10 @@ export default function ConversationPage() {
 
   const onStart = () => managerRef.current?.start?.();
   const onEnd = () => managerRef.current?.end?.();
+  const handleFinish = () => {
+    // only shown when status === "Disconnected"
+    router.push(`/thank-you/${reportId}`);
+  };
 
   return (
     <AppShell
@@ -93,6 +98,17 @@ export default function ConversationPage() {
             conversationId={String(conversationId)}
             showPanel={false}
           />
+          {status === "Disconnected" && (
+            <div className="flex justify-center mt-6">
+              <button
+                type="button"
+                onClick={handleFinish}
+                className="inline-flex items-center justify-center rounded-lg px-6 py-3 bg-brand text-buttonText font-semibold hover:opacity-90 transition"
+              >
+                Finish
+              </button>
+            </div>
+          )}
         </div>
       }
     />
