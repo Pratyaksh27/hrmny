@@ -78,6 +78,14 @@ export default function ConversationPage() {
       mainContent={
         <div className="p-4">
           {/* Hide the old card controls; only show transcript inside MainContainer */}
+          <div className="text-center">
+            <h1 className="text-md font-bold text-textMuted">
+              Case ID: {reportId}
+            </h1>
+            <p className="text-md font-bold text-textMuted">
+              Conversation ID: {conversationId}
+            </p>
+          </div>
           <VoiceSessionManager
             ref={managerRef}
             ephemeralKey={ephemeralKey}
