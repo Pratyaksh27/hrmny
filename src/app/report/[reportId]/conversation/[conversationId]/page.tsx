@@ -1,80 +1,92 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import VoiceSessionManager from '@/app/components/VoiceSessionManager';
-import { useParams } from 'next/navigation';
+import React, { useEffect, useRef, useState } from "react";
+import { useParams } from "next/navigation";
+import AppShell from "@/components/layout/AppShell";
+import SidebarCallControls from "@/components/conversation/SideBarCallControls";
+import VoiceSessionManager, { VoiceSessionHandle } from "@/components/conversation/VoiceSessionManager";
 
 export default function ConversationPage() {
-  const { reportId, conversationId } = useParams<{
-    reportId: string;
-    conversationId: string;
-  }>();
-
+  const { reportId, conversationId } = useParams<{ reportId: string; conversationId: string }>();
   const [ephemeralKey, setEphemeralKey] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const managerRef = useRef<VoiceSessionHandle>(null);
+  const [status, setStatus] = useState<"Not Started" | "Connecting" | "Connected" | "Disconnected">("Not Started");
+
   useEffect(() => {
     const fetchEphemeralKey = async () => {
       try {
-        const res = await fetch(
-          `/api/session?reportId=${reportId}&conversationId=${conversationId}`
-        );
-        if (!res.ok) {
-          throw new Error(`Failed to fetch ephemeral key: ${res.statusText}`);
-        }
-
+        const res = await fetch(`/api/session?reportId=${reportId}&conversationId=${conversationId}`);
+        if (!res.ok) throw new Error(`Failed to fetch ephemeral key: ${res.statusText}`);
         const data = await res.json();
         const key = data?.client_secret?.value;
-        if (!key) {
-          throw new Error('No ephemeral key returned from API');
-        }
-
+        if (!key) throw new Error("No ephemeral key returned from API");
         setEphemeralKey(key);
       } catch (err: any) {
-        setError(err.message || 'Unknown error');
+        setError(err.message || "Unknown error");
       } finally {
         setLoading(false);
       }
     };
-
     fetchEphemeralKey();
   }, [reportId, conversationId]);
 
-  if (loading)
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600 text-lg">Loading voice session...</p>
-      </div>
-    );
+  // poll status (simple, cheap) so sidebar text/images update
+  useEffect(() => {
+    const id = setInterval(() => {
+      const s = managerRef.current?.getStatus?.();
+      if (s) setStatus(s);
+    }, 300);
+    return () => clearInterval(id);
+  }, []);
 
-  if (error)
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-500 text-lg">Error: {error}</p>
+        <p className="text-textMuted text-lg">Loading voice session...</p>
       </div>
     );
+  }
+  if (error || !ephemeralKey) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-red-500 text-lg">Error: {error ?? "Could not start voice session."}</p>
+      </div>
+    );
+  }
 
-  if (!ephemeralKey)
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600 text-lg">Could not start voice session.</p>
-      </div>
-    );
+  const onStart = () => managerRef.current?.start?.();
+  const onEnd = () => managerRef.current?.end?.();
 
   return (
-    <main className="min-h-screen bg-gray-50 px-4 py-8">
-      <div className="max-w-5xl mx-auto mt-2 space-y-0">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Conversation for Report <span className="text-blue-600">{reportId}</span>
-          </h1>
-          <p className="text-sm text-gray-500">
-            Conversation ID: {conversationId}
-          </p>
+    <AppShell
+      sidebarContent={
+        <SidebarCallControls
+          status={status}
+          onStart={onStart}
+          onEnd={onEnd}
+          assets={{
+            start: "/mics/conversation_start.png",
+            on: "/mics/conversation_on.png",
+            end: "/mics/conversation_end.png",
+            ended: "/mics/conversation_ended.png",
+          }}
+        />
+      }
+      mainContent={
+        <div className="p-4">
+          {/* Hide the old card controls; only show transcript inside MainContainer */}
+          <VoiceSessionManager
+            ref={managerRef}
+            ephemeralKey={ephemeralKey}
+            reportId={String(reportId)}
+            conversationId={String(conversationId)}
+            showPanel={false}
+          />
         </div>
-        <VoiceSessionManager ephemeralKey={ephemeralKey} reportId={reportId} conversationId={conversationId} />
-      </div>
-    </main>
+      }
+    />
   );
 }
