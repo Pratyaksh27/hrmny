@@ -13,7 +13,7 @@ export default function ThankYouPage() {
 
   return (
     <AppShell
-      sidebarContent={<Sidebar /* keep full sidebar for now; we'll add logo-only variant later */ />}
+      sidebarContent={null}
       mainContent={
         <MainContainer>
           <ThankYouContent reportId={reportId} />
