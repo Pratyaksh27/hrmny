@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## HOW TO TEST THE PRODUCT. TLDR
+A.) Talk to HRMNY HR as a complainant
+B.) Talk to HRMNY HR as the defendant
+C.) (Optional) Talk to HRMNY HR as the witness
+D.) As the HR, see the full report
 
-## Getting Started
 
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## PART A:  ACT as the COMPLAINANT
+Employee List
+```
+ID | Name
+1  | Prat
+2  | Juhi
+3  | Michael
+4  | Tarik
+5  | Shauna
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1.) Go to [demo.](https://demo.hrmny-hr.com/) 
+2.) From the Left Hamburger Menu, Choose Start a Conversation.  
+-- Your Employee ID  **( ID = 1)**.   
+-- Claim raised against Employee **ID (ID = 2)**
+-- Witness Employee ID **(ID = 3)**
+Use the IDs from the Below List
+**NOTE: The Agent will call you by the Name "Prat"** 
+3.) HR Agent will ask you to share your concern. 
+4.) Envision a hypothetical HR scenario in your mind as an Employee. For Ex. Say "My Manager is Harassing me"
+5.) Answer the questions that the HR Agent asks you in any way yoou'd like. 
+6.) End the Conversation. COPY THE REPORT ID
+7.) Click Finish
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## PART B:  ACT as the DEFENDANT
+1.) Go to [http://localhost:3000.](https://demo.hrmny-hr.com/) 
+2.) From the Left Hamburger Menu, Choose "Revisit Existing Case"
+3.) Paste the Report ID and Enter your Employee ID (ID = 2)
+**NOTE: The Agent will call you by the Name "Juhi"**
+4.) Follow the Conversation. Answer the questions.
+5.) End Conversation. 
+6.) Click Finish
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## PART C (OPTIONAL):  ACT as the WITNESS
+1.) Go to [http://localhost:3000.](https://demo.hrmny-hr.com/admin) 
+2.) From the Left Hamburger Menu, Choose "Revisit Existing Case"
+3.) Paste the Report ID and Enter your Employee ID (ID = 3)
+**NOTE: The Agent will call you by the Name "Michael"**
+4.) Follow the Conversation. Answer the questions. 
+5.) End Conversation. 
+6.) Click Finish
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+## PART D:  ACT as the HR: See the Full Report
+1.) Go to http://localhost:3000/admin.   DON'T FORGET THE /admin part 
+2.) Click on the Latest Report. It will expand
+3.) Click on Generate Report
+4.) View Report
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## To Run locally
+This requires setup. Please contact me at pratyash.sharma@hrmny-hr.com and I will help you out
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
